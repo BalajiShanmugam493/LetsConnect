@@ -24,7 +24,7 @@ router.post('/signup', function(req, res, next){
   var errors = req.validationErrors();
   if(errors){
     console.log("Errors in signup");
-    var error_msg = "<div class='alert alert-danger'>"+errors[0].msg+"<br></div>";
+    var error_msg = errors[0].msg;
     console.log("error msg:"+error_msg);
     req.session.errors = errors;
     req.session.success = false;
@@ -98,7 +98,7 @@ router.post('/login', function(req, res, next) {
     // Redirect if it fails
     if (!user) {
       //req.flash('error_msg', 'Login failed!'); 
-      var response = {status : 406, msg : "<div class='alert alert-danger'>Login failed!<br></div>" };
+      var response = {status : 406, msg : "Incorrect Username/password!"};
       res.send(JSON.stringify(response));
       //return res.redirect('/login'); 
     }

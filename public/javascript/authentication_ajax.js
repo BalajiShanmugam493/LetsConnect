@@ -17,16 +17,13 @@ var signup = function(){
 				window.location = "/users/login";	
 			}
 			else{
-				document.getElementById('error_msg').innerHTML = data.msg;
-				if(data.msg == 'Account already exists!'){
-					window.location = "/users/signup";
-				}
+				document.getElementById('error_msg').innerHTML = "<div class='alert alert-danger'>"+data.msg+"<br></div>";
 			}
 			
 		},
 		error : function(result){
 			console.log("return to signup ajax failure");
-			//window.location = "/signup";
+			window.location = "/signup";
 		}
  	});
 }
@@ -53,7 +50,7 @@ var login = function(){
 			}
 			else{
 				console.log("login faled in ajax");
-				document.getElementById('error_msg').innerHTML = data.msg;
+				document.getElementById('error_msg').innerHTML = "<div class='alert alert-danger'>"+data.msg+"<br></div>";
 			}
 		},
 		error : function(result){
