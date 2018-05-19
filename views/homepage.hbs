@@ -1,0 +1,31 @@
+<body onload="javascript:startfetch()">
+	<p id='greetings'></p>
+	<h1>this is the home page</h1>
+	<button class="btn btn-lg " type="button" onclick="location.href='logout'">Log out</button>
+	<div id='findfriends'>
+		<div id='searchpeople'>
+			<input type='text' id='searchpeopleinput' class='search' placeholder='Search for people here'/>
+			<button class="btn btn-lg " type="button" onclick="javascript:searchPeople();">Go</button>	
+		</div>
+		<div id='searchresult'>
+		</div>
+	</div><br><br>
+	<div id='friendrequests'>
+		<button class="btn btn-lg " type="button" onclick="javascript:showRequests();">Show Requests</button>
+		<div id='newrequests'>
+		</div>
+	</div>
+	<div id='myfriends'>
+	<button class="btn btn-lg " type="button" onclick="javascript:showFriends();">My Friends</button>
+	</div>
+	<div id='friendlist'>
+	</div><br>
+	<section id='postbox' class="col-75">
+			<textarea id="message" name="Add Post" placeholder="Write something.." style="height: 119px; margin: 0px; width: 510px;"></textarea><br>
+			<button  class="btn btn-lg"  onclick="javascript:postStatus();">Post</button>
+	</section>
+	<br><br>
+	<section id='postnow'></section>
+</body>
+
+	

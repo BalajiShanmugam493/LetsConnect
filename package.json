@@ -1,0 +1,38 @@
+{
+  "name": "test",
+  "version": "1.0.0",
+  "description": "socsite",
+  "main": "app.js",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.18.2",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.16.2",
+    "express-handlebars": "^3.0.0",
+    "express-session": "^1.15.6",
+    "express-validator": "^2.21.0",
+    "flash": "^1.1.0",
+    "mongodb": "^2.2.35",
+    "mongoose": "^5.0.16",
+    "multer": "^1.3.0",
+    "nodemailer": "^4.6.4",
+    "passport": "^0.4.0",
+    "passport-local": "^1.0.0",
+    "sendgrid": "^5.2.3"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mah-k-esh/siriussocial_node.git"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "Ajay",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mah-k-esh/siriussocial_node/issues"
+  },
+  "homepage": "https://github.com/mah-k-esh/siriussocial_node#readme"
+}

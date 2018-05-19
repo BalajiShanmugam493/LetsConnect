@@ -1,0 +1,10 @@
+diff a/package.json b/package.json	(rejected hunks)
+@@ -18,6 +18,8 @@
+     "nodemailer": "^4.6.4",
+     "passport": "^0.4.0",
+     "passport-local": "^1.0.0",
++    "promise": "^8.0.1",
++    "q": "^1.5.1",
+     "sendgrid": "^5.2.3"
+   },
+   "devDependencies": {},

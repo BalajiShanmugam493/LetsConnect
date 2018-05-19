@@ -1,0 +1,22 @@
+<div id='error_msg' class='text-center'></div>
+<form id='signup_form' class='form-signin text-center' style="margin:auto" method='post' action='/users/signup' enctype='application/x-www-form-urlencoded'>
+  <img class="mb-4" src="https://getbootstrap.com/assets/brand/bootstrap-solid.svg" alt="" width="72" height="72">
+  <h1 class="h3 mb-3 font-weight-normal">Please Register</h1>
+  <label for="inputEmail" class="sr-only">Email address</label>
+  <input type="email" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>
+  <br>
+  <label for="inputName" class="sr-only">Your name</label>
+  <input type="text" id="inputName" class="form-control" placeholder="Name" required autofocus>
+  <br>
+  <label for="inputPassword" class="sr-only">Password</label>
+  <input type="password" id="inputPassword" class="form-control" placeholder="Password" required>
+  <br>
+  <label for="inputConfirmPassword" class="sr-only">Confirm Password</label>
+  <input type="password" id="inputConfirmPassword" class="form-control" placeholder="Confirm Password" required><div class="checkbox mb-3">
+  <button class="btn btn-lg btn-primary btn-block" type="button" onclick="javascript:signup();">Sign Up</button>
+  <p class='text-center'> Already have an account?
+    <!--<button class='btn btn-lg btn-primary btn-block' onclick="location.href='login'">Log In</button> -->
+    <a href='./login'>Log In</a>
+  </p>
+
+</form>
