@@ -1,6 +1,7 @@
 <body onload="javascript:startfetch()">
 	<p id='greetings'></p>
 	<h1>this is the home page</h1>
+	{{{msg}}}
 	<button class="btn btn-lg " type="button" onclick="location.href='logout'">Log out</button>
 	<div id='findfriends'>
 		<div id='searchpeople'>
@@ -23,6 +24,10 @@
 	<section id='postbox' class="col-75">
 			<textarea id="message" name="Add Post" placeholder="Write something.." style="height: 119px; margin: 0px; width: 510px;"></textarea><br>
 			<button  class="btn btn-lg"  onclick="javascript:postStatus();">Post</button>
+			<form id = "addPhoto" class="form-signin text-center" style="margin:auto" method="POST" action="/users/postPhoto" enctype="multipart/form-data">
+				<input type="file" id='inputPhoto' name="inputPhoto" accept="image/*" required>
+				<button class="btn btn-lg" type="submit">Add Photo</button>
+			</form>
 	</section>
 	<br><br>
 	<section id='postnow'></section>

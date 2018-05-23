@@ -1,7 +1,36 @@
 var express = require('express');
+//var app = express();
 var router = express.Router();
 var passport = require('passport');
 var LocalStrategy = require("passport-local").Strategy;
+var multer = require('multer');
+//var path = require("path");
+
+//app.use(express.static(path.join(__dirname, 'public/images')));
+
+var storage = multer.diskStorage({
+  destination: function(req, file, callback){
+    callback(null, './public/images');
+  },
+  filename: function(req, file, callback){
+    callback(null, req.user._id+"-"+Date.now()+".jpeg");
+  }
+});
+var upload = multer({
+  storage: storage, 
+  limits: {fileSize: 1000000},
+  fileFilter: function(req, file, cb){
+  const filetypes = /jpeg|jpg|png|gif/;
+  if(filetypes.test(file.mimetype)){
+    return cb(null, true);
+  }
+  else{
+    cb('Error: Images Only!');
+  }
+}}).single('inputPhoto');
+
+
+
 //var mailer = require('nodemailer');
 var User = require('../models/user');
 var util = require('util');
@@ -197,8 +226,33 @@ router.get('/postmessage', function (req, res) {
   });
 });
 
+router.post('/postPhoto', function(req, res, next){
+  console.log("in post photo POST");
+  upload(req, res, function(err){
+    if(err){
+      console.log("error occured");
+      //window.alert('Error occured while uploading!');
+      //res.sendFile(path.join(__dirname+"/views/homepage.html"));
+      res.redirect( result.status, 'homepage');
+    }
+    else{
+      console.log("upload successful"+req.file);
+      //window.alert('file uploaded');
+      var postData = {
+        postcontent: req.file.filename,
+      }
+      User.postMessage(postData, req, res,function(res, result){
+        console.log("in callback: response = "+JSON.stringify(result));
+        res.redirect(result.status, 'homepage');   
+      });
+    }
+  });
+});
+
+
 router.get('/getposts', function (req, res) {
    //console.log("inside getposts ");
+   console.log('req:'+util.inspect(req));
    console.log("in getposts of user:"+JSON.stringify(req.session.passport.user));
    User.getPosts(req, res,function(res, result){
     console.log("in getposts callback :"+result.length+" results found");

@@ -151,7 +151,7 @@ var showFriends = function(){
 var postStatus = function(){
 	console.log("In post ajax");
 	var postcontent = document.getElementById("message").value;
-	msg = {postcontent:postcontent , likes:4};
+	msg = {postcontent:postcontent , likes:0};
 	//console.log(JSON.stringify(msg));
     $.ajax({
     	url: "postmessage",
@@ -190,11 +190,21 @@ var startfetch = function(){
 					document.getElementById('postnow').innerHTML = "No posts to show";
 			}
 			else{
+				var photoPattern = /.jpeg|.jpg|.png|.gif/;
 				for(p of result){
-					var newPost = "<section class='postItem'>\
-								<div ><b><i>"+p.postedby_name+"</b></i>  on "+p.updatedAt.toLocaleString()+"</div><br>\
-								<div style='font-size:25px'><i>"+p.postcontent+"</i></div><br>\
-								</section>";				
+					if(photoPattern.test(p.postcontent)){
+						var newPost = "<section class='postItem'>\
+						<div ><b><i>"+p.postedby_name+"</b></i>  on "+p.updatedAt.toLocaleString()+"</div><br>\
+						<img src=/images/"+p.postcontent+" class='image' alt='Photo'><br>\
+						</section>";		
+					}
+					else{
+						var newPost = "<section class='postItem'>\
+						<div ><b><i>"+p.postedby_name+"</b></i>  on "+p.updatedAt.toLocaleString()+"</div><br>\
+						<div style='font-size:25px'><i>"+p.postcontent+"</i></div><br>\
+						</section>";		
+					}
+							
 					//console.log("newpost"+newPost);
 					$("#postnow").append(newPost);
 				}

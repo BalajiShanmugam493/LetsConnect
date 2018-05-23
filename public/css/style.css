@@ -53,3 +53,9 @@ body {
   border-top-left-radius: 0;
   border-top-right-radius: 0;
 }
+
+.image{
+  width: 500px;
+  height: auto;
+  padding:5px;
+}

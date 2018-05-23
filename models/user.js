@@ -231,22 +231,25 @@ module.exports.showFriends = function(req,res,callback){
 module.exports.postMessage = function(data,req,res,callback){
 	console.log("in post message function---");
 	console.log(data);
-	User.findOne({_id: req.session.passport.user},function(err,doc){
+	var postmsg={postcontent: data.postcontent, postedby_id:req.user._id, postedby_name:req.user.username, likes:0, comments: []};
+		Post.create(postmsg,function(err,record){
+			console.log("post added as:");
+			console.log(typeof  record);
+			console.log(record);
+			insertPost(req.user,record._id,req,res,callback);
+		});
+	/*User.findOne({_id: req.session.passport.user},function(err,doc){
 		if(err){
 			console.log("post failed");
 			response = {status: 406, msg: "post failed"};
 			callback(res, response);
 		}
 		else {
-			var postmsg={postcontent: data.postcontent, postedby_id:doc._id, postedby_name:doc.username, likes:data.likes};
-			Post.create(postmsg,function(err,record){
-				console.log("post added as:");
-				console.log(typeof  record);
-				console.log(record);
-				insertPost(doc,record._id,req,res,callback);
-			});
+			
 		}
+
 	});	
+	*/
 
 	var insertPost=function(userdoc,record_id,req,res,callback){
 		var newArr = userdoc.posts;
