@@ -176,6 +176,10 @@ var postStatus = function(){
 	//return false;
 }
 
+var profilePage = function(){
+	console.log("in profile page ajax");
+}
+
 var startfetch = function(){
 	console.log("in startfetch ajax--");
 	$.ajax({
@@ -184,8 +188,10 @@ var startfetch = function(){
 			"content-Type":"application/json"
 		},
 		type: "GET",
-		success: function(result){
-			console.log("getpost success :"+result.length+" results found.");
+		success: function(response){
+			console.log("getpost success :"+response.result.length+" results found.");
+			var result = response.result;
+			document.getElementById('profileButton').innerHTML = response.username;
 			if(result.length == 0){
 					document.getElementById('postnow').innerHTML = "No posts to show";
 			}
@@ -216,3 +222,4 @@ var startfetch = function(){
 		}
 	});
 }
+

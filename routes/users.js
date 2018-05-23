@@ -33,6 +33,8 @@ var upload = multer({
 
 //var mailer = require('nodemailer');
 var User = require('../models/user');
+//var Post = require('../models/post');
+
 var util = require('util');
 
 router.get('/signup',function(req, res){
@@ -69,7 +71,12 @@ router.post('/signup', function(req, res, next){
     var newUser = new User({
       username: req.body.username,
       email: req.body.email,
-      password: req.body.password
+      password: req.body.password,
+      dob: req.body.dob,
+      firstname: req.body.firstname,
+      lastname: req.body.lastname,
+      gender: req.body.gender,
+      country: req.body.country
     });
     
     console.log("newUser:"+JSON.stringify(newUser));
@@ -256,7 +263,8 @@ router.get('/getposts', function (req, res) {
    console.log("in getposts of user:"+JSON.stringify(req.session.passport.user));
    User.getPosts(req, res,function(res, result){
     console.log("in getposts callback :"+result.length+" results found");
-    res.send(result);
+    var response = {"result" : result, "username": req.user.username};
+    res.send(response);
   });
 });
 

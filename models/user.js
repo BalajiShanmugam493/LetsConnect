@@ -1,11 +1,17 @@
 var mongoose = require('mongoose');
 var bcrypt = require('bcryptjs');
+//var Post = require('./post');
 
 
 var UserSchema = mongoose.Schema({
 	email: String,
 	username: String,
 	password: String,
+	dob: Date,
+	firstname: String,
+	lastname: String,
+	gender: String,
+	country: String,
 	friends: {
 		type: [mongoose.Schema.Types.ObjectId],
 		//default: new Array()
@@ -20,6 +26,7 @@ var UserSchema = mongoose.Schema({
 	}
 });
 
+
 var PostSchema = mongoose.Schema({
 	postcontent: String,
 	postedby_id: mongoose.Schema.Types.ObjectId,
@@ -29,6 +36,7 @@ var PostSchema = mongoose.Schema({
 }, {
 	timestamps:true
 });
+
 
 var Post = module.exports = mongoose.model('Post', PostSchema);
 var User = module.exports = mongoose.model('User', UserSchema);
@@ -228,6 +236,22 @@ module.exports.showFriends = function(req,res,callback){
 	});
 }
 
+module.exports.insertPost=function(userdoc,record_id,req,res,callback){
+	var newArr = userdoc.posts;
+	if(newArr === undefined) newArr = new Array();
+	newArr.push(record_id);
+	//console.log("typeof newArr "+ typeof newArr+" "+newArr);
+	userdoc.posts = newArr;
+	console.log("added new post:"+JSON.stringify(userdoc));
+	User.findOneAndUpdate({_id:userdoc._id},{$set:{posts:newArr}}, function(err, doc1){
+		console.log("user updated.");
+		 	response = {status: 200, msg: "posted"};		
+		callback(res,response);    			
+	});
+}
+
+
+
 module.exports.postMessage = function(data,req,res,callback){
 	console.log("in post message function---");
 	console.log(data);
@@ -236,39 +260,16 @@ module.exports.postMessage = function(data,req,res,callback){
 			console.log("post added as:");
 			console.log(typeof  record);
 			console.log(record);
-			insertPost(req.user,record._id,req,res,callback);
+			User.insertPost(req.user,record._id,req,res,callback);
 		});
-	/*User.findOne({_id: req.session.passport.user},function(err,doc){
-		if(err){
-			console.log("post failed");
-			response = {status: 406, msg: "post failed"};
-			callback(res, response);
-		}
-		else {
-			
-		}
 
-	});	
-	*/
-
-	var insertPost=function(userdoc,record_id,req,res,callback){
-		var newArr = userdoc.posts;
-		if(newArr === undefined) newArr = new Array();
-		newArr.push(record_id);
-		//console.log("typeof newArr "+ typeof newArr+" "+newArr);
-		userdoc.posts = newArr;
-		console.log("added new post:"+JSON.stringify(userdoc));
-		User.findOneAndUpdate({_id:userdoc._id},{$set:{posts:newArr}}, function(err, doc1){
-			console.log("user updated.");
-   		 	response = {status: 200, msg: "posted"};		
-    		callback(res,response);    			
-		});
-	}
+	
 }
 
 module.exports.getPosts = function(req,res,callback){
 	var friendlist = new Array();
-	User.findOne({_id:req.session.passport.user},function(err,doc){
+	console.log(""+"./");
+	User.getUserById(req.user._id,function(err,doc){
 		if(err){
 			console.log("getposts failed");
 			response = {status: 406, msg: "cannot fetch posts"};
@@ -296,3 +297,4 @@ module.exports.getPosts = function(req,res,callback){
 		}
 	});
 }
+
