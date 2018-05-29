@@ -29,7 +29,7 @@ var signup = function(){
 		},
 		error : function(result){
 			console.log("return to signup ajax failure");
-			window.location = "/signup";
+			window.location = "/users/signup";
 		}
  	});
 }

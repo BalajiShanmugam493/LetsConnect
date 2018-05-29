@@ -5,14 +5,12 @@ var cookieParser = require('cookie-parser');
 var session = require('express-session');
 var validator = require('express-validator');
 var handlebars = require('express-handlebars');
-//var flash = require('connect-flash');
 var passport = require('passport'); 
 var mongo  = require('mongodb');
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://ajayTest:ajay2112@ds147469.mlab.com:47469/testsocial');
 var db = mongoose.connection;
 
-//var router = express.Router();
 var routes = require('./routes/index.js');
 var users = require('./routes/users.js');
 
@@ -33,7 +31,6 @@ app.use(passport.session());
 app.engine('hbs', handlebars({extname: 'hbs', defaultLayout: 'layout', layoutsDir: __dirname + '/views/layouts/'}));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
-//app.use(flash());
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'views')));

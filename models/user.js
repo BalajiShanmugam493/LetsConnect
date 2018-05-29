@@ -12,6 +12,7 @@ var UserSchema = mongoose.Schema({
 	lastname: String,
 	gender: String,
 	country: String,
+	profilepic: String,
 	friends: {
 		type: [mongoose.Schema.Types.ObjectId],
 		//default: new Array()
@@ -31,13 +32,17 @@ var PostSchema = mongoose.Schema({
 	postcontent: String,
 	postedby_id: mongoose.Schema.Types.ObjectId,
 	postedby_name: String,
-	likes: Number,
-	comments:[{by:String, body:String, date: Date}],
+	likes: [new mongoose.Schema({ userid: mongoose.Schema.Types.ObjectId, username: String},{_id: false})],
+	comments:[{
+		by:{ userid: mongoose.Schema.Types.ObjectId, username: String}, 
+		body:String, 
+		date: Date
+	}],
 }, {
 	timestamps:true
 });
 
-
+	
 var Post = module.exports = mongoose.model('Post', PostSchema);
 var User = module.exports = mongoose.model('User', UserSchema);
 
@@ -54,7 +59,7 @@ module.exports.createUser = function(newUser,req, res, callback){
 			    bcrypt.hash(newUser.password, salt, function(err, hash) {
 			        // Store hash in your password DB. 
 			        newUser.password = hash;
-			        newUser.save(function(err, user){
+			        User.create(newUser, function(err, user){
 				      if(err) throw err;
 				      console.log("created user:"+user);
 				    });
@@ -77,16 +82,16 @@ module.exports.createUser = function(newUser,req, res, callback){
 };
 
 
-module.exports.getUserByName = function(username, callback){
-	var query = {username: username};
-	console.log("query username:"+query.username);
+module.exports.getUserByEmail = function(username, callback){
+	var query = {email: email};
+	console.log("query email:"+query.email);
 	User.findOne(query, callback);
 };
 
 
-module.exports.getUserByEmail = function(username, callback){
-	var query = {email: email};
-	console.log("query email:"+query.email);
+module.exports.getUserByName = function(username, callback){
+	var query = {"username": username};
+	console.log("query username:"+query.username);
 	User.findOne(query, callback);
 };
 
@@ -153,21 +158,28 @@ module.exports.sendRequest = function(query, req, res, callback){
 }
 
 module.exports.showRequests = function(req,res,callback){
-	console.log(req+res);
-	User.find({_id:req.session.passport.user}, function(err, doc){
-		console.log("friend requests for: "+doc);
+	//console.log(req);
+	User.findById(req.session.passport.user, function(err, doc){
+		console.log("friend requests for "+doc.username+": "+doc.friendreq);
 		console.log("friend requests: "+doc.friendreq);
 		if(err)throw err;
 		var reqs=[];
 		reqs=doc.friendreq;
-		console.log("new friend requests : "+reqs);
 		var resultArr = []; 
-		for(req in reqs){
-			User.find({_id:req},function(err,res){
-				resultArr.push(res);
+		for(r of reqs){
+			console.log("req id:"+r);
+			User.findById(r, function(err,doc1){
+				console.log("friendreq from :"+doc1.username);
+				resultArr.push(doc1);
+				if(resultArr.length==reqs.length) {
+					console.log("new friend requests : "+resultArr);
+					callback(res, resultArr);
+				}
 			});
 		}
-		callback(res, resultArr);
+
+		
+		
 });
 }
 
@@ -216,24 +228,17 @@ module.exports.acceptRequest = function(query, req, res, callback){
 
 module.exports.showFriends = function(req,res,callback){
 	//console.log(req+res);
-	User.findOne({_id:req.session.passport.user},function(err,doc){ 
-		console.log("friendlist for: "+doc._id);
-		if(err) throw err;
-		var friends=[];
-		friends=doc.friends;
-		console.log("friends : ");
-		console.log(friends);
-		if(friends.length==0) callback(res,friends);
-		var resultArr = []; 
-		console.log("friends length:"+friends.length);
-		for(friend of friends){
-			//console.log(friend);
-			User.findOne({_id:friend},function(err,doc1){				
-				resultArr.push(doc1.username);
-				if(resultArr.length == friends.length) callback(res,resultArr);
-			});
-		}
-	});
+	var friends = req.user.friends;
+	if(friends.length==0) callback(res,friends);
+	var resultArr = []; 
+	console.log("friends length:"+friends.length);
+	for(friend of friends){
+		//console.log(friend);
+		User.findOne({_id:friend},function(err,doc){				
+			resultArr.push({username: doc.username, _id: doc._id});
+			if(resultArr.length == friends.length) callback(res,resultArr);
+		});
+	}
 }
 
 module.exports.insertPost=function(userdoc,record_id,req,res,callback){
@@ -245,7 +250,7 @@ module.exports.insertPost=function(userdoc,record_id,req,res,callback){
 	console.log("added new post:"+JSON.stringify(userdoc));
 	User.findOneAndUpdate({_id:userdoc._id},{$set:{posts:newArr}}, function(err, doc1){
 		console.log("user updated.");
-		 	response = {status: 200, msg: "posted"};		
+		response = {status: 200, msg: "posted"};		
 		callback(res,response);    			
 	});
 }
@@ -255,7 +260,7 @@ module.exports.insertPost=function(userdoc,record_id,req,res,callback){
 module.exports.postMessage = function(data,req,res,callback){
 	console.log("in post message function---");
 	console.log(data);
-	var postmsg={postcontent: data.postcontent, postedby_id:req.user._id, postedby_name:req.user.username, likes:0, comments: []};
+	var postmsg={postcontent: data.postcontent, postedby_id:req.user._id, postedby_name:req.user.username, likes:[], comments: []};
 		Post.create(postmsg,function(err,record){
 			console.log("post added as:");
 			console.log(typeof  record);
@@ -266,35 +271,142 @@ module.exports.postMessage = function(data,req,res,callback){
 	
 }
 
-module.exports.getPosts = function(req,res,callback){
-	var friendlist = new Array();
-	console.log(""+"./");
-	User.getUserById(req.user._id,function(err,doc){
+
+module.exports.changeProfilePic = function(image,req,res,callback){
+	console.log("in post message function---");
+	User.findByIdAndUpdate(req.user._id,  {$set:{profilepic: image.path}}, function(err, doc){
 		if(err){
-			console.log("getposts failed");
-			response = {status: 406, msg: "cannot fetch posts"};
-			callback(res, response);
+			console.log("upload dp error");
+			throw err;
 		}
-		else friendlist=doc.friends;
-		console.log("posts from ");
-		console.log(friendlist);
-		console.log("friendlist length:"+friendlist.length);
-		var resultArr=new Array();
-		var count=0;
-		for(friend of friendlist){
-			Post.find({postedby_id:friend},function(err,docs){
-				count++;
-				if(err){
-					console.log("getposts failed");
-					response = {status: 406, msg: "cannot fetch posts"};
-					callback(res, response);
-				}
-				else {
-					for(doc of docs) resultArr.push(doc);
-					if(count==friendlist.length) callback(res,resultArr);
-				}
-			});	
-		}
+		console.log("user updated.");
+		response = {status: 200, msg: "profile pic changed"};		
+		callback(res,response);  
 	});
 }
 
+
+module.exports.getPosts = function(req,res,callback){
+	console.log("In getPosts model");
+	var friends = req.user.friends;
+	var count=0;
+	var resultArr = new Array();
+	for(friend of friends){
+		Post.find({postedby_id:friend},function(err,docs){
+			count++;
+			console.log("friend " + count);
+			if(err){
+				console.log("getposts failed");
+				response = {status: 406, msg: "cannot fetch posts"};
+				callback(res, response);
+			}
+			else {
+				for(doc of docs) resultArr.push(doc);
+				if(count==friends.length) callback(res,resultArr);
+			}
+		});
+	}
+}
+
+
+
+module.exports.likePost = function(postid, req, res, callback){
+	//console.log(""+"./");
+	Post.findById(postid, function(err,doc){
+		if(err){
+			console.log("addlikes failed 1: "+err);
+			response = {status: 406, msg: "cannot fetch your posts"};
+			callback(res, response);
+		}
+		var oldLikes = doc.likes;
+		console.log("old likes:"+oldLikes);
+		var newLiker = {userid: req.user._id, username: req.user.username};
+		var isNew = true;
+		for(like of oldLikes){
+			console.log("like = "+like.username+" newliker = "+newLiker);
+			if(like.userid.equals(newLiker.userid)){
+				isNew = false;
+				break;
+			}
+		}
+		if(isNew){
+			console.log("new like added");
+			oldLikes.push(newLiker);
+			Post.findByIdAndUpdate(postid, {$set: {"likes": oldLikes}}, function(err,doc){
+				if(err){
+					console.log("addlikes failed 2 : "+err);
+					response = {status: 406, msg: "cannot fetch your posts"};
+					callback(res, response);
+				}
+				console.log("after updating likes:"+doc);
+				var response = {"status": 200, "msg": "post liked", "likes": oldLikes};
+				callback(res, response);
+			});
+		}
+		else {
+			console.log("Already liked!");
+			var response = {"status": 200, "msg": "post liked", "likes": oldLikes};
+			callback(res, response);
+		}
+	})
+	
+}
+
+
+module.exports.commentPost = function(req, res, callback){
+	//console.log(""+"./");
+	var newComment = {
+		by: {userid: req.user.id, username: req.user.username},
+		body: req.body.comment,
+		date: new Date()
+	};
+	Post.findById(req.body.id, function(err,doc){
+		if(err){
+			console.log("addcomment failed 1: "+err);
+			response = {status: 406, msg: "cannot comment this post"};
+			callback(res, response);
+		}
+		var oldComments = doc.comments;
+		console.log("old comments:");
+		console.log(oldComments);
+		var isNew = true;
+		oldComments.push(newComment);
+		Post.findByIdAndUpdate(req.body.id, {$set: {"comments": oldComments}}, function(err,doc){
+			if(err){
+				console.log("add comments failed 2 : "+err);
+				response = {status: 406, msg: "cannot comment this post"};
+				callback(res, response);
+			}
+			console.log("after updating likes:"+doc);
+			var response = {"status": 200, "msg": "post commented", "comment": newComment};
+			callback(res, response);
+		});
+	})
+	
+}
+
+
+module.exports.getPostsByUser = function(user, req, res, callback){
+	//console.log(""+"./");
+	Post.find({postedby_id: user}, function(err,doc){
+		if(err){
+			console.log("getposts failed"+err);
+			response = {status: 406, msg: "cannot fetch your posts"};
+			callback(res, response);
+		}
+		console.log("my posts:"+doc);
+		var response = {status: 200, msg: "fetch user's post successful!", result: doc};
+		callback(res, response);
+	});
+}
+
+module.exports.getDp = function(id, req, res, callback){
+	User.findById(id, function(err, doc){
+		if(err) throw err;
+		var response = {
+			username: doc.username,
+			dp: doc.profilepic
+		};
+		callback(res, response);
+	});
+}

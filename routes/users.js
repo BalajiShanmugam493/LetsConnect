@@ -18,7 +18,7 @@ var storage = multer.diskStorage({
 });
 var upload = multer({
   storage: storage, 
-  limits: {fileSize: 1000000},
+  limits: {fileSize: 50000000},
   fileFilter: function(req, file, cb){
   const filetypes = /jpeg|jpg|png|gif/;
   if(filetypes.test(file.mimetype)){
@@ -29,7 +29,27 @@ var upload = multer({
   }
 }}).single('inputPhoto');
 
+var storageDp = multer.diskStorage({
+  destination: function(req, file, callback){
+    callback(null, './public/images');
+  },
+  filename: function(req, file, callback){
+    callback(null, req.user._id+"-dp.jpeg");
+  }
+});
 
+var uploadDp = multer({
+  storage: storageDp, 
+  limits: {fileSize: 50000000},
+  fileFilter: function(req, file, cb){
+  const filetypes = /jpeg|jpg|png|gif/;
+  if(filetypes.test(file.mimetype)){
+    return cb(null, true);
+  }
+  else{
+    cb('Error: Images Only!');
+  }
+}}).single('inputDp');
 
 //var mailer = require('nodemailer');
 var User = require('../models/user');
@@ -68,7 +88,7 @@ router.post('/signup', function(req, res, next){
     console.log("signup validation successful");
     req.session.success = true;
     
-    var newUser = new User({
+    var newUser = {
       username: req.body.username,
       email: req.body.email,
       password: req.body.password,
@@ -77,7 +97,7 @@ router.post('/signup', function(req, res, next){
       lastname: req.body.lastname,
       gender: req.body.gender,
       country: req.body.country
-    });
+    };
     
     console.log("newUser:"+JSON.stringify(newUser));
     User.createUser(newUser, req, res, function( res, response){
@@ -123,7 +143,7 @@ passport.serializeUser(function(user, done) {
 
 passport.deserializeUser(function(id, done) {
   User.getUserById(id, function(err, user) {
-    done(err, user);
+    done(null, user);
   });
 });
 
@@ -141,7 +161,7 @@ router.post('/login', function(req, res, next) {
     req.logIn(user, function(err) {
       if (err) { return next(err); }
       //Redirect if it succeeds
-      console.log("loggd in user "+req.session.passport.user);
+      console.log("logged in user "+req.session.passport.user);
       var response = {status : 200, msg : "Login successful!", user: req.session.passport.user};
       res.send(JSON.stringify(response));
       //return res.redirect('/users/homepage');//'/users/' + user.username
@@ -160,17 +180,14 @@ router.get('/logout', function(req, res){
 
 router.get('/homepage', function(req, res){
   console.log("in homepage get()");
+  //console.log("req:"+util.inspect(req));
   if(req.isAuthenticated()){
-    console.log("redirected to homepage");
     //res.sendFile(path.join(__dirname+"/views/homepage.html"));
-    
-    res.render('homepage', { title: "Homepage", condition: false});
+    res.render('homepage', { title: "Homepage", username:req.user.username, dp: req.user.profilepic, condition: false});
   }
   else{
-    //req.flash('error_msg', "You are not logged in");
     console.log("not logged in");
     //var response = {status : 406, msg : "<div class='alert alert-danger'>You are not logged in!<br></div>" };
-    //document.getElementById('error_msg').innerHTML = response.msg;
     res.redirect('/users/login');
   }
   
@@ -198,7 +215,7 @@ router.get('/sendrequest', function(req, res){
 
 router.get('/showrequests', function(req,res){
   console.log('in showrequests GET\nof user:'+JSON.stringify(req.session.passport.user));
-  User.showRequests(req,res,function(res, resArr ){
+  User.showRequests(req,res,function(res, resArr){
     console.log("in showrequests callback :"+resArr.length);
     res.send(resArr);
   });
@@ -233,14 +250,15 @@ router.get('/postmessage', function (req, res) {
   });
 });
 
-router.post('/postPhoto', function(req, res, next){
+
+router.post('/postphoto', function(req, res, next){
   console.log("in post photo POST");
   upload(req, res, function(err){
     if(err){
-      console.log("error occured");
+      throw err;
       //window.alert('Error occured while uploading!');
       //res.sendFile(path.join(__dirname+"/views/homepage.html"));
-      res.redirect( result.status, 'homepage');
+      res.render('homepage', { msg: "Unable to post image!" });
     }
     else{
       console.log("upload successful"+req.file);
@@ -257,13 +275,109 @@ router.post('/postPhoto', function(req, res, next){
 });
 
 
+
+router.post('/changedp', function(req, res, next){
+  console.log("in post photo POST");
+  uploadDp(req, res, function(err){
+    if(err){
+      throw err;
+      res.render('homepage', { msg: "Unable to change profile pic!" });
+    }
+    else{
+      console.log("upload successful"+req.file);
+      //window.alert('file uploaded');
+      var newImage = {
+        path: req.file.filename,
+      }
+      User.changeProfilePic(newImage, req, res,function(res, result){
+        console.log("in callback: response = "+JSON.stringify(result));
+        res.redirect('homepage');   
+      });
+    }
+  });
+});
+
+
 router.get('/getposts', function (req, res) {
    //console.log("inside getposts ");
-   console.log('req:'+util.inspect(req));
+   //console.log('req:'+util.inspect(req));
    console.log("in getposts of user:"+JSON.stringify(req.session.passport.user));
    User.getPosts(req, res,function(res, result){
     console.log("in getposts callback :"+result.length+" results found");
     var response = {"result" : result, "username": req.user.username};
+    res.send(response);
+  });
+});
+
+
+router.get('/likepost', function (req, res) {
+   console.log("in likepost of user:"+JSON.stringify(req.session.passport.user));
+   User.likePost(req.query.id, req, res,function(res, response){
+    console.log("in likepost callback :"+response.likes.length+" results found");
+    res.send(response);
+  });
+});
+
+
+router.post('/commentpost', function (req, res, next) {
+   //console.log('req:'+util.inspect(req));
+   console.log("in commentpost of user:"+req.session.passport.user);
+   User.commentPost(req, res,function(res, response){
+    console.log("in commentpost callback");
+    res.send(response);
+  });
+});
+
+
+router.get('/myprofile',function(req, res){
+  console.log("redirected to user profile");
+  //res.sendFile(path.join(__dirname+'/views/signup.html'));
+  if(req.isAuthenticated()){
+    //res.sendFile(path.join(__dirname+"/views/homepage.html"));
+    res.render('profilepage', {title: req.query.username, 
+      id: req.user._id, 
+      dp: req.user.profilepic, 
+      username: req.user.username,
+      condition: false
+    });
+  }
+  else{
+    console.log("not logged in");
+    //var response = {status : 406, msg : "<div class='alert alert-danger'>You are not logged in!<br></div>" };
+    res.redirect('/users/login');
+  }
+  
+});
+
+
+router.get('/friendprofile-:id',function(req, res){
+  console.log("redirected to user profile");
+  if(req.isAuthenticated()){
+    //res.sendFile(path.join(__dirname+"/views/homepage.html"));
+    User.getDp(req.params.id, req, res, function(res, response){
+      res.render('profilepage',{
+        title: response.username, 
+        id: req.params.id, 
+        username: response.username, 
+        dp: response.dp, 
+        condition: false
+      });    
+    });
+  }
+  else{
+    console.log("not logged in");
+    //var response = {status : 406, msg : "<div class='alert alert-danger'>You are not logged in!<br></div>" };
+    res.redirect('/users/login');
+  }
+});
+
+
+router.get('/userposts', function (req, res) {
+   //console.log("inside getposts ");
+   //console.log('req:'+util.inspect(req));
+   console.log("in profile of user:"+JSON.stringify(req.session.passport.user));
+   User.getPostsByUser(req.query.id, req, res, function(res, response){
+    console.log("in profile callback :"+response.result.length+" results found");
     res.send(response);
   });
 });

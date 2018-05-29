@@ -1,4 +1,4 @@
-function searchPeople(){
+var searchPeople = function(){
 	console.log("in searchPeople function");
 	data = {key: document.getElementById('searchpeopleinput').value};
 	console.log("data:"+JSON.stringify(data));
@@ -22,7 +22,6 @@ function searchPeople(){
 							Add Friend</button><br></div>`;
 				}
 				document.getElementById('searchresult').innerHTML = html;
-				
 			}
 			
 		},
@@ -66,9 +65,8 @@ var showRequests = function(){
 		url:'showrequests',
 		headers: {"Content-Type" : "application/json"},
 		type: "GET",
-		data:{},
 		success : function(result){
-			console.log("return to signup ajax success:"+result);
+			console.log("return to showRequests ajax success:"+result);
 			var data = result;
 			if(data.length == 0){
 					document.getElementById('newrequests').innerHTML = "No new requests";
@@ -125,18 +123,17 @@ var showFriends = function(){
 		url:'showfriends',
 		headers: {"Content-Type" : "application/json"},
 		type: "GET",
-		data:{},
 		success : function(result){
 			console.log("return to signup ajax success: "+result.length+" results found.");
-			var data = result;
-			if(data.length == 0){
-					document.getElementById('friendlist').innerHTML = "Sorry! You don't have any friends";
+			var friends = result;
+			if(friends.length == 0){
+					document.getElementById('friendlist').innerHTML = "Sorry! You don't have any friends yet!";
 			}
 			else{
 				var html = '';
-				for(name of result){
+				for(f of friends){
 					//console.log(name);
-				html += "<div id='"+name+ "'>"+name+"<br></div>";
+				html += "<div><span>"+f.username+"</span><button id='"+f._id+ "'onclick=\"location.href='friendprofile-"+f._id+"'\">View Profile</button>";
 				}
 				document.getElementById('friendlist').innerHTML = html;
 			}
@@ -147,6 +144,68 @@ var showFriends = function(){
 		}
 	});	
 }
+
+
+var userPosts = function(id){// id 0 for currentuser and id _id for friends
+	console.log("in profile page ajax:");
+	$.ajax({
+		url: "userposts",
+		headers:{
+			"content-Type":"application/json"
+		},
+		type: "GET",
+		data: {"id": id},
+		success: function(response){
+			console.log("profilepage success :"+response.result.length+" results found.");
+			var result = response.result;
+			if(result.length == 0){
+					document.getElementById('userPosts').innerHTML = "No posts to show";
+			}
+			else{
+				var photoPattern = /.jpeg|.jpg|.png|.gif/;
+				$("#userPosts").html('');
+				for(p of result){
+					if(photoPattern.test(p.postcontent)){
+						var newPost = "<section class='postItem'>\
+						<div ><b><i>"+p.postedby_name+"</b></i>  on "+p.updatedAt.toLocaleString()+"</div><br>\
+						<img src=/images/"+p.postcontent+" class='image' alt='Photo'><br>\
+						<button type='button' onclick=\"javascript:likePost('"+p._id+"');\">Like</button>\
+						<span id='"+p._id+"likecount'>"+p.likes.length+"</span>\
+						Comment:<input type='text' id='"+p._id+"commentInput' placeholder='Type your comment here'>\
+						<button type='button' onclick=\"javascript:commentPost('"+p._id+"');\">Comment</button>\
+						<div id='"+p._id+"comments'>";
+						for(comment of p.comments){
+							newPost += "<div>"+comment.by.username+" : "+comment.body+"</div>";
+						}
+						newPost += "</div></section>";	
+					}
+					else{
+						var newPost = "<section class='postItem'>\
+						<div ><b><i>"+p.postedby_name+"</b></i>  on "+p.updatedAt.toLocaleString()+"</div><br>\
+						<div style='font-size:25px'><i>"+p.postcontent+"</i></div><br>\
+						<button type='button' onclick=\"javascript:likePost('"+p._id+"');\">Like</button>\
+						<span id='"+p._id+"likecount'>"+p.likes.length+"</span>\
+						Comment:<input type='text' id='"+p._id+"commentInput' placeholder='Type your comment here'>\
+						<button type='button' onclick=\"javascript:commentPost('"+p._id+"');\">Comment</button>\
+						<div id='"+p._id+"comments'>";
+						for(comment of p.comments){
+							html += "<div>"+comment.by.username+" : "+comment.body+"</div>";
+						}
+						html += "</div></section>";	
+					}
+							
+					//console.log("newpost"+newPost);
+					$("#userPosts").append(newPost);
+				}
+			}
+		},
+		error: function(result){
+			console.log("profilepage failure");
+			alert("error occured while fetching your posts");
+		}
+	});
+}
+
 
 var postStatus = function(){
 	console.log("In post ajax");
@@ -176,12 +235,10 @@ var postStatus = function(){
 	//return false;
 }
 
-var profilePage = function(){
-	console.log("in profile page ajax");
-}
 
 var startfetch = function(){
 	console.log("in startfetch ajax--");
+	hideElement('changeDp');
 	$.ajax({
 		url: "getposts",
 		headers:{
@@ -190,8 +247,8 @@ var startfetch = function(){
 		type: "GET",
 		success: function(response){
 			console.log("getpost success :"+response.result.length+" results found.");
+			console.log(response);
 			var result = response.result;
-			document.getElementById('profileButton').innerHTML = response.username;
 			if(result.length == 0){
 					document.getElementById('postnow').innerHTML = "No posts to show";
 			}
@@ -200,17 +257,32 @@ var startfetch = function(){
 				for(p of result){
 					if(photoPattern.test(p.postcontent)){
 						var newPost = "<section class='postItem'>\
-						<div ><b><i>"+p.postedby_name+"</b></i>  on "+p.updatedAt.toLocaleString()+"</div><br>\
+						<div ><a href='./friendprofile-"+p.postedby_id+"'>"+p.postedby_name+"</a>  on "+p.updatedAt.toLocaleString()+"</div><br>\
 						<img src=/images/"+p.postcontent+" class='image' alt='Photo'><br>\
-						</section>";		
+						<button type='button' onclick=\"javascript:likePost('"+p._id+"');\">Like</button>\
+						<span id='"+p._id+"likecount'>"+p.likes.length+"</span> \
+						Comment:<input type='text' id='"+p._id+"commentInput' placeholder='Type your comment here'>\
+						<button type='button' onclick=\"javascript:commentPost('"+p._id+"');\">Comment</button>\
+						<div id='"+p._id+"comments'>";
+						for(comment of p.comments){
+							newPost += "<div>"+comment.by.username+" : "+comment.body+"</div>";
+						}
+						newPost += "</div></section>";	
 					}
 					else{
 						var newPost = "<section class='postItem'>\
-						<div ><b><i>"+p.postedby_name+"</b></i>  on "+p.updatedAt.toLocaleString()+"</div><br>\
+						<div ><a href='./friendprofile-"+p.postedby_id+"'>"+p.postedby_name+"</a>  on "+p.updatedAt.toLocaleString()+"</div><br>\
 						<div style='font-size:25px'><i>"+p.postcontent+"</i></div><br>\
-						</section>";		
-					}
-							
+						<button type='button' onclick=\"javascript:likePost('"+p._id+"');\">Like</button>\
+						<span id='"+p._id+"likecount'>"+p.likes.length+"</span>\
+						Comment:<input type='text' id='"+p._id+"commentInput' placeholder='Type your comment here'>\
+						<button type='button' onclick=\"javascript:commentPost('"+p._id+"');\">Comment</button>\
+						<div id='"+p._id+"comments'>";
+						for(comment of p.comments){
+							newPost += "<div>"+comment.by.username+" : "+comment.body+"</div>";
+						}
+						newPost += "</div></section>";	
+					}		
 					//console.log("newpost"+newPost);
 					$("#postnow").append(newPost);
 				}
@@ -223,3 +295,76 @@ var startfetch = function(){
 	});
 }
 
+
+var likePost = function(id){
+	console.log("in like post ajax")
+	$.ajax({
+		url:'likepost',
+		headers: {"Content-Type" : "application/json"},
+		type: "GET",
+		data: {"id": id},
+		success : function(result){
+			console.log("return to likeposts ajax success: "+result.likes.length+" results found.");
+			document.getElementById(id+'likecount').innerHTML = result.likes.length;
+		},
+		error : function(result){
+			console.log("return to likeposts ajax failure");
+			//window.location = "/signup";
+		}
+	});	
+}
+
+
+var commentPost = function(id){
+	console.log("in comment post ajax")
+	$.ajax({
+		url:'commentpost',
+		headers: {"Content-Type" : "application/json"},
+		type: "POST",
+		data: JSON.stringify({"id": id, "comment": document.getElementById(id+"commentInput").value}),
+		success : function(result){
+			console.log("return to commentposts ajax success: "+result.length+" results found.");
+			var html = "<div>"+result.comment.by.username+" : "+result.comment.body+"</div>";
+			$('#'+id+'comments').append(html);			
+		},
+		error : function(result){
+			console.log("return to commentposts ajax failure");
+			//window.location = "/signup";
+		}
+	});	
+}
+
+
+var postImage = function(){
+	console.log("in postImage ajax");
+	var data = new FormData();
+	var img = document.getElementById('inputPhoto').value;
+	data.append('image', img);
+	$.ajax({
+		url: "postPhoto",
+		/*headers:{
+			"content-Type":"multipart/form-data"
+		},*/
+		data:data,
+	    cache:false,
+	    processData:false,
+	    contentType:false,
+		type: "POST",
+		data: data,
+		success: function(response){
+			console.log("getpost success :"+response.result.length+" results found.");
+		},
+		error: function(response){
+			console.log("getpost failure");
+			alert("error occured while fetching posts");
+		}
+	});
+}
+
+var showElement = function(id){
+	document.getElementById(id).style.display = "block";
+}
+
+var hideElement = function(id){
+	document.getElementById(id).style.display = "none";
+}
