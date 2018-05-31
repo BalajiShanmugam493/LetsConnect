@@ -29,7 +29,10 @@ var UserSchema = mongoose.Schema({
 
 
 var PostSchema = mongoose.Schema({
-	postcontent: String,
+	postcontent: {
+		posttext: String,
+		postimage: String
+	},
 	postedby_id: mongoose.Schema.Types.ObjectId,
 	postedby_name: String,
 	likes: [new mongoose.Schema({ userid: mongoose.Schema.Types.ObjectId, username: String},{_id: false})],
@@ -63,7 +66,7 @@ module.exports.createUser = function(newUser,req, res, callback){
 				      if(err) throw err;
 				      console.log("created user:"+user);
 				    });
-			        response = { status : 200, msg : "success"};
+			        response = { status : 200, msg : "Account created successfully!"};
 			        console.log("response:"+response+" type:"+ typeof response);
      				callback(res, response);
 			    });
@@ -112,14 +115,15 @@ module.exports.comparePassword = function(candidatePassword, hash, callback){
 
 module.exports.findFriends = function(query, req, res, callback){
 	User.find({}, function(err, docs){
+		var key = query.key.toLowerCase();
 		console.log("search result : "+docs);
 		if(err)throw err;
 		var resultArr = [];
 		for(doc of docs){
-			if(doc.username.match(query.key) && doc._id != req.session.passport.user && doc.friends.indexOf(req.session.passport.user)<0 && doc.friendreq.indexOf(req.session.passport.user)<0){
+			if(doc.username.toLowerCase().match(key) && doc._id != req.session.passport.user && doc.friends.indexOf(req.session.passport.user)<0 && doc.friendreq.indexOf(req.session.passport.user)<0){
 				console.log("check:"+!doc.friendreq.includes(req.session.passport.user));
 				resultArr.push(doc);
-			}
+			}	
 		}
 		callback(res, resultArr);
 	});
@@ -241,7 +245,7 @@ module.exports.showFriends = function(req,res,callback){
 	}
 }
 
-module.exports.insertPost=function(userdoc,record_id,req,res,callback){
+module.exports.insertPost = function(userdoc, record_id, req, res, callback){
 	var newArr = userdoc.posts;
 	if(newArr === undefined) newArr = new Array();
 	newArr.push(record_id);
@@ -257,16 +261,16 @@ module.exports.insertPost=function(userdoc,record_id,req,res,callback){
 
 
 
-module.exports.postMessage = function(data,req,res,callback){
-	console.log("in post message function---");
-	console.log(data);
-	var postmsg={postcontent: data.postcontent, postedby_id:req.user._id, postedby_name:req.user.username, likes:[], comments: []};
-		Post.create(postmsg,function(err,record){
-			console.log("post added as:");
-			console.log(typeof  record);
-			console.log(record);
-			User.insertPost(req.user,record._id,req,res,callback);
-		});
+module.exports.postMessage = function(postdata, req, res, callback){
+	console.log("in post message function:"+JSON.stringify(postdata));
+	console.log(postdata);
+	var postmsg={postcontent: postdata, postedby_id:req.user._id, postedby_name:req.user.username, likes:[], comments: []};
+	Post.create(postmsg, function(err, record){
+		console.log("post added as:");
+		console.log(typeof  record);
+		console.log(record);
+		User.insertPost(req.user, record._id, req, res, callback);
+	});
 
 	
 }
@@ -302,6 +306,7 @@ module.exports.getPosts = function(req,res,callback){
 			}
 			else {
 				for(doc of docs) resultArr.push(doc);
+				console.log("fetched posts:"+resultArr);
 				if(count==friends.length) callback(res,resultArr);
 			}
 		});

@@ -1,7 +1,17 @@
 <body onload="javascript:userPosts('{{{id}}}');">
+	<button type="button" class="btn btn-primary" onclick="location.href='homepage'">Home</button>
+	<button type="button" class="btn btn-danger" onclick="location.href='logout'">Log Out</button>
 	<div id="profile">
 		<img class="dp" src="/images/{{{dp}}}" alt="Your Image">
 		<span>{{{username}}}</span>
+		<button id='profilepicButton's type='button' class="btn btn-primary" onclick="showElement('changeDp')"> Change</button>
+		<div id='changeDp' style="display:none;">
+			<form id = "addPhoto" method="POST" action="/users/changedp" enctype="multipart/form-data">
+				<input type="file" id="inputDp" name="inputDp" accept="image/*" required>
+				<button type="submit" class="btn btn-primary">Change Photo</button>
+				<button type="button" class="btn btn-danger" onclick="javascript:hideElement('changeDp')"> Cancel</button>
+			</form>
+		</div>
 	</div>
 	<div id="userPosts"</div>
 </body>
