@@ -48,7 +48,7 @@ router.post('/signup', function(req, res, next){
     //res.writeHead(406, {"Content-Type": "application/json"});
     //req.flash('error_msg', errors[0].msg);
     var response = {status : 406, msg : error_msg };
-    res.send(JSON.stringify(response));
+    res.render('signup', response);
   }
   else{
     console.log("signup validation successful");
@@ -68,7 +68,13 @@ router.post('/signup', function(req, res, next){
     console.log("newUser:"+JSON.stringify(newUser));
     User.createUser(newUser, req, res, function( res, response){
       console.log("in callback: response = "+JSON.stringify(response));
-      res.send(JSON.stringify(response));
+      //res.send(JSON.stringify(response));
+      if(response.status == 200){
+        res.redirect('login');
+      }
+      else {
+        res.render('signup', response);
+      }
     });
   }
 
@@ -121,15 +127,16 @@ router.post('/login', function(req, res, next) {
     if (err) return next(err); 
     if(!user) {
       var response = {status : 406, msg : "Incorrect Username/password!"};
-      res.send(JSON.stringify(response));
-      //return res.redirect('/login'); 
+      //res.send(JSON.stringify(response));
+      return res.render('login', response); 
     }
     else{
       req.logIn(user, function(err) {
         if (err) { return next(err); }
         console.log("logged in user "+req.session.passport.user);
         var response = {status : 200, msg : "Login successful!", user: req.session.passport.user};
-        res.send(JSON.stringify(response));
+        //res.send(JSON.stringify(response));
+        res.redirect('homepage');
       });
     }
   })(req, res, next);

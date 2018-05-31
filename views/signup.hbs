@@ -1,5 +1,5 @@
 <body onload="javascript:populateCountries('inputCountry');">
-<div id='error_msg' class='text-center'></div>
+<div id='error_msg' class='text-center'>{{{msg}}}</div>
 <form id='signup_form' class='form-signin text-center' style="margin:auto" method='post' action='/users/signup'>
   <h1 class="h3 mb-3 font-weight-normal">Please Register</h1>
 
@@ -32,8 +32,8 @@
   
   <input type="password" id="inputConfirmPassword" name="confirmPassword" class="form-control" placeholder="Confirm Password" required>
   
-  <button type="button" class="btn btn-md btn-success btn-block" onclick="javascript:signup();">Sign Up</button>
-  <!--<button type="submit" class="btn btn-md btn-success btn-block"> Sign Up</button>-->
+  <!--<button type="button" class="btn btn-md btn-success btn-block" onclick="javascript:signup();">Sign Up</button>-->
+  <button type="submit" class="btn btn-md btn-success btn-block"> Sign Up</button>
   
   <p class='text-center'> Already have an account?
     <a class="btn btn-info" href='./login'>Log In</a>
