@@ -112,16 +112,25 @@ module.exports.comparePassword = function(candidatePassword, hash, callback){
 	//return passwordHash.verify(candidatePassword, this.password);
 };
 
-
+var isMatch = function(str1, str2){
+	if(str1.length > str2.length){
+		var temp = str1;
+		str1 = str2;
+		str2 = temp;
+	}
+	for(var i=0; i<str1.length-2; i++){
+		if(str2.indexOf(str1.substring(i,i+3))>=0)return true; 
+	}
+	return false;
+}
 module.exports.findFriends = function(query, req, res, callback){
 	User.find({}, function(err, docs){
-		var key = query.key.toLowerCase();
-		console.log("search result : "+docs);
 		if(err)throw err;
 		var resultArr = [];
 		for(doc of docs){
-			if(doc.username.toLowerCase().match(key) && doc._id != req.session.passport.user && doc.friends.indexOf(req.session.passport.user)<0 && doc.friendreq.indexOf(req.session.passport.user)<0){
-				console.log("check:"+!doc.friendreq.includes(req.session.passport.user));
+			console.log("userid:"+req.user._id+" current id:"+doc._id);	
+			if(!doc._id.equals(req.user._id) && isMatch(doc.username, query.key)){//&& doc.friends.indexOf(req.user._id)<0 && doc.friendreq.indexOf(req.session.passport.user)<0
+				//console.log("check:"+doc.friendreq.includes(req.session.passport.user));
 				resultArr.push(doc);
 			}	
 		}
@@ -142,11 +151,8 @@ module.exports.sendRequest = function(query, req, res, callback){
 			var newArr = doc.friendreq;
 			if(newArr === undefined){
 				newArr = new Array();
-				newArr.push(req.session.passport.user);
 			}
-			else{
-				newArr.push(req.session.passport.user);
-			}
+			newArr.push(req.session.passport.user);
 			console.log("typeof newArr "+ typeof newArr+" "+newArr);
 			//doc.friendreq.push(req.session.passport.user);
 			doc.friendreq = newArr;
@@ -165,10 +171,12 @@ module.exports.showRequests = function(req,res,callback){
 	//console.log(req);
 	User.findById(req.session.passport.user, function(err, doc){
 		console.log("friend requests for "+doc.username+": "+doc.friendreq);
-		console.log("friend requests: "+doc.friendreq);
 		if(err)throw err;
 		var reqs=[];
 		reqs=doc.friendreq;
+		if(reqs == undefined || reqs.length == 0){
+			callback(res, []);
+		}
 		var resultArr = []; 
 		for(r of reqs){
 			console.log("req id:"+r);
@@ -180,11 +188,8 @@ module.exports.showRequests = function(req,res,callback){
 					callback(res, resultArr);
 				}
 			});
-		}
-
-		
-		
-});
+		}		
+	});
 }
 
 
@@ -295,6 +300,9 @@ module.exports.getPosts = function(req,res,callback){
 	var friends = req.user.friends;
 	var count=0;
 	var resultArr = new Array();
+	if(friends == undefined || friends.length == 0){
+		callback(res,[]);
+	}
 	for(friend of friends){
 		Post.find({postedby_id:friend},function(err,docs){
 			count++;
@@ -327,11 +335,13 @@ module.exports.likePost = function(postid, req, res, callback){
 		console.log("old likes:"+oldLikes);
 		var newLiker = {userid: req.user._id, username: req.user.username};
 		var isNew = true;
-		for(like of oldLikes){
-			console.log("like = "+like.username+" newliker = "+newLiker);
-			if(like.userid.equals(newLiker.userid)){
-				isNew = false;
-				break;
+		if(oldLikes.length != 0){
+			for(like of oldLikes){
+				console.log("like = "+like.username+" newliker = "+newLiker);
+				if(like.userid.equals(newLiker.userid)){
+					isNew = false;
+					break;
+				}
 			}
 		}
 		if(isNew){

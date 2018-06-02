@@ -5,7 +5,7 @@ var showElement = function(id){
 var hideElement = function(id){
 	document.getElementById(id).style.display = "none";
 }
-
+	
 function populateCountries(countryElementId) {
     // given the id of the <select> tag as function argument, it inserts <option> tags
     var country_arr = new Array("Afghanistan", "Albania", "Algeria", "American Samoa", "Angola", "Anguilla",
@@ -60,19 +60,36 @@ var searchPeople = function(){
 		headers: {"Content-Type" : "application/json"},
 		type: "GET",
 		data: data,
-		success : function(result){
-			console.log("return to signup ajax success:"+result);
-			var data = result;
-			if(data.length == 0){
+		success : function(response){
+			console.log("return to signup ajax success:"+response);
+			// /var user = response.user;
+			//var people = response.people;
+			if(response.people.length == 0){
 					document.getElementById('searchresult').innerHTML = "No results found";
 			}
 			else{
 				var html = '';
-				for(doc of result){
+				for(doc of response.people){
 					console.log(JSON.stringify(doc));
-					html += "<div id='"+doc.email+ "'>"+doc.username
-							+"<button id='"+doc.email + "btn' class='btn btn-primary' type='button' onclick='javascript:sendRequest(\""+doc.email+"\");'>\
-							Add Friend</button><br></div>";
+					if(response.user.friends.includes(doc._id)){
+						html += "<div id='"+doc.email+ "'>"+doc.username
+						+"<button id='"+doc.email + "btn' class='btn btn-primary' type='button' onclick='javascript:userPosts(\""+doc._id+"\");'>\
+						View Profile</button><br></div>";
+					}
+					else if(response.user.friendreq.includes(doc._id)){
+						html += "<div id='"+doc.email+ "'>"+doc.username +"\
+						<button id='"+doc.email + "btn' class='btn btn-primary' type='button' onclick='javascript:acceptRequest(\""+doc.email+"\");'>\
+						Confirm</button><br></div>";
+					}
+					else if(doc.friendreq.includes(response.user._id)){
+						html += "<div id='"+doc.email+ "'>"+doc.username +"Request Pending<br></div>";	
+					}
+					else{
+						html += "<div id='"+doc.email+ "'>"+doc.username
+						+"<button id='"+doc.email + "btn' class='btn btn-primary' type='button' onclick='javascript:sendRequest(\""+doc.email+"\");'>\
+						Add Friend</button><br></div>";	
+					}
+					
 				}
 				document.getElementById('searchresult').innerHTML = html;
 			}
@@ -138,7 +155,7 @@ var showRequests = function(){
 			
 		},
 		error : function(result){
-			console.log("return to signup ajax failure");
+			console.log("return to show requests ajax failure");
 			//window.location = "/signup";
 		}
 	})	
@@ -313,22 +330,27 @@ var likePost = function(id){
 
 
 var commentPost = function(id){
-	console.log("in comment post ajax")
-	$.ajax({
-		url:'commentpost',
-		headers: {"Content-Type" : "application/json"},
-		type: "POST",
-		data: JSON.stringify({"id": id, "comment": document.getElementById(id+"commentInput").value}),
-		success : function(result){
-			console.log("return to commentposts ajax success: "+result.length+" results found.");
-			var html = "<div>"+result.comment.by.username+" : "+result.comment.body+"</div>";
-			$('#'+id+'comments').append(html);			
-		},
-		error : function(result){
-			console.log("return to commentposts ajax failure");
-			//window.location = "/signup";
-		}
-	});	
+	var comment = document.getElementById(id+"commentInput").value;
+	if(comment != "" && comment != undefined){
+		document.getElementById(id+"commentInput").value = "";
+		console.log("in comment post ajax")
+		$.ajax({
+			url:'commentpost',
+			headers: {"Content-Type" : "application/json"},
+			type: "POST",
+			data: JSON.stringify({"id": id, "comment": comment}),
+			success : function(result){
+				console.log("return to commentposts ajax success: "+result.length+" results found.");
+				var html = "<div>"+result.comment.by.username+" : "+result.comment.body+"</div>";
+				$('#'+id+'comments').append(html);			
+			},
+			error : function(result){
+				console.log("return to commentposts ajax failure");
+				//window.location = "/signup";
+			}
+		});	
+	}
+	
 }
 
 

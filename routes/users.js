@@ -170,8 +170,9 @@ router.get('/homepage', function(req, res){
 router.get('/searchpeople', function(req, res){
   console.log('in searchpeople GET ---- key:'+JSON.stringify(req.data));
   User.findFriends(req.query, req, res, function(res, result){
-    console.log("in callback :"+result.length);
-    res.send(result);
+    console.log("in callback :"+result.length+" results found!");
+    var response = {people: result, user: req.user};
+    res.send(response);
   });
 });
 

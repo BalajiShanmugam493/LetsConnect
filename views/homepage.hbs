@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <body onload="javascript:startfetch()">
 	<p id='greetings'></p>
 	{{{msg}}}
@@ -10,7 +11,7 @@
 			<input type='text' id='searchpeopleinput' class='search' placeholder='Search for people here'/>
 			<button type="button" class="btn btn-success" onclick="javascript:searchPeople();">Go</button>	
 		</div>
-		<div id='searchresult'>
+		<div id='searchresult' onblur="javascript:hideElement('searchresult')">
 		</div>
 	</div><br><br>
 	<button type="button" id="profileButton" class="btn btn-primary" onclick="location.href='myprofile'"> {{{username}}} </button>	
