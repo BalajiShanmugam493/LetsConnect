@@ -46,7 +46,7 @@ router.post('/signup', function(req, res, next){
   //console.log(req.body);
   req.checkBody('username', 'Enter a valid Name!').notEmpty().isLength({min: 3});
   req.checkBody('email', 'Invalid email Address!').isEmail();
-  req.checkBody('password', 'Incorrect password!').isLength({min: 6});
+  req.checkBody('password', 'Password should be atleast 6 characters long!').isLength({min: 6});
   req.checkBody('password', 'Passwords do not match!').equals(req.body.confirmPassword);
   
 
