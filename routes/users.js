@@ -284,7 +284,7 @@ router.post('/homepage', function(req, res, next){
 
 
   upload(req, res, function(err){
-    //console.log(util.inspect(req));
+    ////console.log(util.inspect(req));
     if(err){
       throw err;
       //window.alert('Error occured while uploading!');

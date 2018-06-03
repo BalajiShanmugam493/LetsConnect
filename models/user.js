@@ -297,27 +297,17 @@ module.exports.changeProfilePic = function(image,req,res,callback){
 
 module.exports.getPosts = function(req,res,callback){
 	//console.log("In getPosts model");
-	var friends = req.user.friends;
+	var users = req.user.friends;
+	users.push(req.user._id);
 	var count=0;
 	var resultArr = new Array();
-	if(friends == undefined || friends.length == 0){
+	if(users == undefined || users.length == 0){
 		callback(res,[]);
 	}
-	Post.find({postedby_id:req.user._id},function(err,docs){
-		if(err){
-			//console.log("getposts failed");
-			response = {status: 406, msg: "cannot fetch posts"};
-			callback(res, response);
-		}
-		else {
-			for(doc of docs) resultArr.push(doc);
-			//console.log("fetched posts:"+resultArr);
-		}
-	});
-	for(friend of friends){
-		Post.find({postedby_id:friend},function(err,docs){
+	for(user of users){
+		Post.find({postedby_id:user},function(err,docs){
 			count++;
-			//console.log("friend " + count);
+			//console.log("user " + count);
 			if(err){
 				//console.log("getposts failed");
 				response = {status: 406, msg: "cannot fetch posts"};
@@ -326,7 +316,7 @@ module.exports.getPosts = function(req,res,callback){
 			else {
 				for(doc of docs) resultArr.push(doc);
 				//console.log("fetched posts:"+resultArr);
-				if(count==friends.length) callback(res,resultArr);
+				if(count==users.length) callback(res,resultArr);
 			}
 		});
 	}
