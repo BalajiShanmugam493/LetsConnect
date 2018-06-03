@@ -271,7 +271,7 @@ router.post('/homepage', function(req, res, next){
 
   var upload = multer({
     storage: storage, 
-    limits: {fileSize: 50000000},
+    limits: {fileSize: 20000000},
     fileFilter: function(req, file, cb){
     const filetypes = /jpeg|jpg|png|gif/;
     if(filetypes.test(file.mimetype)){
@@ -393,7 +393,7 @@ router.post('/changedp', function(req, res, next){
 
     var uploadDp = multer({
       storage: storageDp, 
-      limits: {fileSize: 50000000},
+      limits: {fileSize: 20000000},
       fileFilter: function(req, file, cb){
       const filetypes = /jpeg|jpg|png|gif/;
       if(filetypes.test(file.mimetype)){
