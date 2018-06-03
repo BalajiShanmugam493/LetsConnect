@@ -26,7 +26,7 @@
     "url": "git+https://github.com/mah-k-esh/siriussocial_node.git"
   },
   "scripts": {
-    "start": "node index.js"
+    "start": "node app.js"
   },
   "keywords": [],
   "author": "Ajay",
