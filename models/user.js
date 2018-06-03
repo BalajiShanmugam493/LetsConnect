@@ -303,6 +303,17 @@ module.exports.getPosts = function(req,res,callback){
 	if(friends == undefined || friends.length == 0){
 		callback(res,[]);
 	}
+	Post.find({postedby_id:req.user._id},function(err,docs){
+		if(err){
+			console.log("getposts failed");
+			response = {status: 406, msg: "cannot fetch posts"};
+			callback(res, response);
+		}
+		else {
+			for(doc of docs) resultArr.push(doc);
+			console.log("fetched posts:"+resultArr);
+		}
+	});
 	for(friend of friends){
 		Post.find({postedby_id:friend},function(err,docs){
 			count++;
@@ -393,7 +404,7 @@ module.exports.commentPost = function(req, res, callback){
 				callback(res, response);
 			}
 			console.log("after updating likes:"+doc);
-			var response = {"status": 200, "msg": "post commented", "comment": newComment};
+			var response = {"status": 200, "msg": "post commented", "comment": newComment, "count": oldComments.length};
 			callback(res, response);
 		});
 	})
@@ -410,18 +421,14 @@ module.exports.getPostsByUser = function(user, req, res, callback){
 			callback(res, response);
 		}
 		console.log("my posts:"+doc);
-		var response = {status: 200, msg: "fetch user's post successful!", result: doc};
+		var response = {status: 200, msg: "fetch user's post successful!", result: doc, user: req.user};
 		callback(res, response);
 	});
 }
 
-module.exports.getDp = function(id, req, res, callback){
+module.exports.getFriendProfile = function(id, req, res, callback){
 	User.findById(id, function(err, doc){
 		if(err) throw err;
-		var response = {
-			username: doc.username,
-			dp: doc.profilepic
-		};
-		callback(res, response);
+		callback(res, doc);
 	});
 }

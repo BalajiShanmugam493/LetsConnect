@@ -5,7 +5,15 @@ var showElement = function(id){
 var hideElement = function(id){
 	document.getElementById(id).style.display = "none";
 }
-	
+
+
+var formatDate = function(dateObj){
+	var date = new Date(dateObj);
+	var options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: "2-digit", minute: "2-digit"};	
+	return date.toLocaleTimeString("en-us", options);
+}
+
+
 function populateCountries(countryElementId) {
     // given the id of the <select> tag as function argument, it inserts <option> tags
     var country_arr = new Array("Afghanistan", "Albania", "Algeria", "American Samoa", "Angola", "Anguilla",
@@ -62,35 +70,33 @@ var searchPeople = function(){
 		data: data,
 		success : function(response){
 			console.log("return to signup ajax success:"+response);
-			// /var user = response.user;
-			//var people = response.people;
+			showElement('searchresult');
 			if(response.people.length == 0){
 					document.getElementById('searchresult').innerHTML = "No results found";
 			}
 			else{
-				var html = '';
+				var html = "<div class='col-sm-7 text-center'><div class='panel panel-body'>";
 				for(doc of response.people){
 					console.log(JSON.stringify(doc));
+					html += "<div class='row'><div class='well-sm'><div id='"+doc.email+ "'>"+doc.username+"<span style='display:inline-block; width: 25px;'></span>";
 					if(response.user.friends.includes(doc._id)){
-						html += "<div id='"+doc.email+ "'>"+doc.username
-						+"<button id='"+doc.email + "btn' class='btn btn-primary' type='button' onclick='javascript:userPosts(\""+doc._id+"\");'>\
+						html += "<button id='"+doc.email + "btn' class='btn btn-primary' type='button' onclick=\"location.href='friendprofile-"+doc._id+"'\">\
 						View Profile</button><br></div>";
 					}
 					else if(response.user.friendreq.includes(doc._id)){
-						html += "<div id='"+doc.email+ "'>"+doc.username +"\
-						<button id='"+doc.email + "btn' class='btn btn-primary' type='button' onclick='javascript:acceptRequest(\""+doc.email+"\");'>\
+						html += "<button id='"+doc.email + "btn' class='btn btn-primary' type='button' onclick='javascript:acceptRequest(\""+doc.email+"\");'>\
 						Confirm</button><br></div>";
 					}
 					else if(doc.friendreq.includes(response.user._id)){
-						html += "<div id='"+doc.email+ "'>"+doc.username +"Request Pending<br></div>";	
+						html += "Request Pending<br></div>";	
 					}
 					else{
-						html += "<div id='"+doc.email+ "'>"+doc.username
-						+"<button id='"+doc.email + "btn' class='btn btn-primary' type='button' onclick='javascript:sendRequest(\""+doc.email+"\");'>\
-						Add Friend</button><br></div>";	
+						html += "<button id='"+doc.email + "btn' class='btn btn-primary' type='button' onclick='javascript:sendRequest(\""+doc.email+"\");'>\
+						Add Friend</button><br></div></div>";	
 					}
 					
 				}
+				html += "<button type='button' id='"+doc.email + "btn' class='btn btn-primary' onclick=\"javascript:hideElement('searchresult')\">OK</button></div></div>"
 				document.getElementById('searchresult').innerHTML = html;
 			}
 			
@@ -137,22 +143,22 @@ var showRequests = function(){
 		type: "GET",
 		success : function(result){
 			console.log("return to showRequests ajax success:"+result);
+			showElement('newrequests');
 			var data = result;
+			var html = "";
 			if(data.length == 0){
-					document.getElementById('newrequests').innerHTML = "No new requests";
+					html = "No new requests";
 			}
 			else{
-				var html = '';
 				for(doc of result){
 					console.log(JSON.stringify(doc));
 					html += "<div id='"+doc.email+ "'>"+doc.username +"\
-							<button id='"+doc.email + "btn' class='btn btn-primary' type='button' onclick='javascript:acceptRequest(\""+doc.email+"\");'>\
-							Confirm</button><br></div>";
+					<button id='"+doc.email + "btn' class='btn btn-primary' type='button' onclick='javascript:acceptRequest(\""+doc.email+"\");'>\
+					Confirm</button><br></div>";
 				}
-				document.getElementById('newrequests').innerHTML = html;
-				
 			}
-			
+			html += "<button type='button' class='btn btn-primary' onclick=\"javascript:hideElement('newrequests')\">OK</button>";
+			document.getElementById('newrequests').innerHTML = html;
 		},
 		error : function(result){
 			console.log("return to show requests ajax failure");
@@ -195,18 +201,19 @@ var showFriends = function(){
 		type: "GET",
 		success : function(result){
 			console.log("return to signup ajax success: "+result.length+" results found.");
+			showElement('friendlist');
 			var friends = result;
+			var html = "";
 			if(friends.length == 0){
-					document.getElementById('friendlist').innerHTML = "Sorry! You don't have any friends yet!";
+					html= "Sorry! You don't have any friends yet!";
 			}
 			else{
-				var html = '';
 				for(f of friends){
-					//console.log(name);
-				html += "<div><span>"+f.username+"</span><button id='"+f._id+ "'class='btn btn-primary' onclick=\"location.href='friendprofile-"+f._id+"'\">View Profile</button>";
+					html += "<a href='friendprofile-"+f._id+"'>"+f.username+"</a><br>";
 				}
-				document.getElementById('friendlist').innerHTML = html;
 			}
+			html += "<button type='button' class='btn btn-primary' onclick=\"javascript:hideElement('friendlist')\">OK</button>";
+			document.getElementById('friendlist').innerHTML = html;
 		},
 		error : function(result){
 			console.log("return to signup ajax failure");
@@ -228,6 +235,9 @@ var userPosts = function(id){// id 0 for currentuser and id _id for friends
 		success: function(response){
 			console.log("profilepage success :"+response.result.length+" results found.");
 			var result = response.result;
+			result.sort(function (a, b) {
+			    return new Date(b.updatedAt) - new Date(a.updatedAt);
+			});
 			if(result.length == 0){
 					document.getElementById('userPosts').innerHTML = "No posts to show";
 			}
@@ -236,21 +246,31 @@ var userPosts = function(id){// id 0 for currentuser and id _id for friends
 				var photoPattern = /.jpeg|.jpg|.png|.gif/;
 				$("#userPosts").html('');
 				for(p of result){
-					var newPost = "<section class='postItem'>\
-					<div><a href='./friendprofile-"+p.postedby_id+"'>"+p.postedby_name+"</a>  on "+p.updatedAt.toLocaleString()+"</div><br>"+p.postcontent.posttext;
+					var newPost = "<div class='row'><div class='col-sm-12'><div class='panel panel-default'>\
+					<div class='post-details panel-heading'><a href='./friendprofile-"+p.postedby_id+"'><b>"+p.postedby_name+"</b></a><br>"+formatDate(p.updatedAt)+"</div><br><div class='post-text'>"+p.postcontent.posttext+"</div>";
 					if(p.postcontent.postimage != ""){
 						console.log("post contains image");
-						newPost += "<br><img src=/images/"+p.postcontent.postimage+" class='image' alt='Photo'><br>";
+						newPost += "<br><img src='/images/"+p.postcontent.postimage+"' class='img-responsive'><br>";
 					}
-					newPost += "<button type='button' class='btn btn-primary' onclick=\"javascript:likePost('"+p._id+"');\">Like</button>\
-					<span id='"+p._id+"likecount'>"+p.likes.length+"Likes</span> \
-					Comment:<input type='text' id='"+p._id+"commentInput' placeholder='Type your comment here'>\
+					if(isLiked(p.likes, response.user._id)){
+						newPost += "<div class='panel-footer post-footer'><span class='glyphicon glyphicon-heart' id='"+p._id+"likebutton'></span>\
+						<span id='"+p._id+"likecount'>"+p.likes.length+"<span style='display:inline-block; width: 5px;'></span>Likes</span>\
+						<span style='display:inline-block; width: 15px;'></span><span id='"+p._id+"commentcount'>"+p.comments.length+"</span><span style='display:inline-block; width: 5px;'></span>Comments<br>";
+					}
+					else{
+						newPost += "<div class='panel-footer post-footer'><span id='"+p._id+"likebutton'> <button type='button' class='btn btn-default btn-sm' onclick=\"javascript:likePost('"+p._id+"');\">\
+						<span class='glyphicon glyphicon-heart-empty'></span></button></span>\
+						<span id='"+p._id+"likecount'>"+p.likes.length+"<span style='display:inline-block; width: 5px;'></span>Likes</span>\
+						<span style='display:inline-block; width: 15px;'></span><span id='"+p._id+"commentcount'>"+p.comments.length+"</span><span style='display:inline-block; width: 5px;'></span>Comments<br>";
+					}
+					newPost += "Comment:<input type='text' id='"+p._id+"commentInput' placeholder='Type your comment here'>\
 					<button type='button' class='btn btn-primary' onclick=\"javascript:commentPost('"+p._id+"');\">Comment</button>\
 					<div id='"+p._id+"comments'>";
 					for(comment of p.comments){
-						newPost += "<div>"+comment.by.username+" : "+comment.body+"</div>";
+						newPost += "<div><b>"+comment.by.username+"</b> : "+comment.body+"</div>";
 					}
-					newPost += "</div></section>";	
+					
+					newPost += "</div></div></div><div>";	
 					//console.log("newpost"+newPost);
 					$("#userPosts").append(newPost);
 				}
@@ -261,6 +281,14 @@ var userPosts = function(id){// id 0 for currentuser and id _id for friends
 			alert("error occured while fetching your posts");
 		}
 	});
+}
+
+var isLiked = function(likeArr, user){
+	if(likeArr.length == 0)return false;
+	for(i of likeArr){
+		if(i.userid == user)return true;
+	}
+	return false;
 }
 
 
@@ -276,27 +304,40 @@ var startfetch = function(){
 			console.log("getpost success :"+response.result.length+" results found.");
 			console.log(response);
 			var result = response.result;
+			result.sort(function (a, b) {
+			    return new Date(b.updatedAt) - new Date(a.updatedAt);
+			});
 			if(result.length == 0){
 					document.getElementById('postnow').innerHTML = "No posts to show";
 			}
 			else{
 				console.log(response.result);
 				for(p of result){
-					var newPost = "<section class='postItem'>\
-					<div><a href='./friendprofile-"+p.postedby_id+"'>"+p.postedby_name+"</a>  on "+p.updatedAt.toLocaleString()+"</div><br>"+p.postcontent.posttext;
+					var newPost = "<div class='row'><div class='col-sm-12'><div class='panel panel-default'>\
+					<div class='post-details panel-heading' style='background-color: #e1e7ef;'><a href='./friendprofile-"+p.postedby_id+"'><b>"+p.postedby_name+"</b></a><br>"+formatDate(p.updatedAt)+"<br></div><div class='post-text'>"+p.postcontent.posttext+"</div>";
 					if(p.postcontent.postimage != ""){
 						console.log("post contains image");
-						newPost += "<br><img src=/images/"+p.postcontent.postimage+" class='image' alt='Photo'><br>";
+						newPost += "<br><img src='/images/"+p.postcontent.postimage+"' class='img-responsive'><br>";
 					}
-					newPost += "<button type='button' class='btn btn-primary' onclick=\"javascript:likePost('"+p._id+"');\">Like</button>\
-					<span id='"+p._id+"likecount'>"+p.likes.length+"Likes</span> \
-					Comment:<input type='text' id='"+p._id+"commentInput' placeholder='Type your comment here'>\
+					if(isLiked(p.likes, response.user._id)){
+						console.log("You already liked this post");
+						newPost += "<div class='panel-footer post-footer'><span class='glyphicon glyphicon-heart' id='"+p._id+"likebutton'></span>\
+						<span id='"+p._id+"likecount'>"+p.likes.length+"<span style='display:inline-block; width: 5px;'></span>Likes</span>\
+						<span style='display:inline-block; width: 15px;'></span><span id='"+p._id+"commentcount'>"+p.comments.length+"</span><span style='display:inline-block; width: 5px;'></span>Comments<br>";
+					}
+					else{
+						newPost += "<div class='panel-footer post-footer'><span  id='"+p._id+"likebutton'><button type='button' class='btn btn-default btn-sm' onclick=\"javascript:likePost('"+p._id+"');\">\
+						<span class='glyphicon glyphicon-heart-empty'></span></button></span>\
+						<span id='"+p._id+"likecount'>"+p.likes.length+"<span style='display:inline-block; width: 5px;'></span>Likes</span>\
+						<span style='display:inline-block; width: 15px;'></span><span id='"+p._id+"commentcount'>"+p.comments.length+"</span><span style='display:inline-block; width: 5px;'></span>Comments<br>";
+					}
+					newPost += "Comment:<input type='text' id='"+p._id+"commentInput' placeholder='Comment here...'>\
 					<button type='button' class='btn btn-primary' onclick=\"javascript:commentPost('"+p._id+"');\">Comment</button>\
 					<div id='"+p._id+"comments'>";
 					for(comment of p.comments){
-						newPost += "<div>"+comment.by.username+" : "+comment.body+"</div>";
+						newPost += "<div><b>"+comment.by.username+"</b>:"+comment.body+"</div>";
 					}
-					newPost += "</div></section>";
+					newPost += "</div></div></div></div>";
 					//console.log("newpost"+newPost);
 					$("#postnow").append(newPost);
 				}
@@ -320,6 +361,7 @@ var likePost = function(id){
 		success : function(result){
 			console.log("return to likeposts ajax success: "+result.likes.length+" results found.");
 			document.getElementById(id+'likecount').innerHTML = result.likes.length + "Likes";
+			document.getElementById(id+"likebutton").innerHTML = "<span class='glyphicon glyphicon-heart' id='"+p._id+"likebutton'></span>";
 		},
 		error : function(result){
 			console.log("return to likeposts ajax failure");
@@ -341,8 +383,9 @@ var commentPost = function(id){
 			data: JSON.stringify({"id": id, "comment": comment}),
 			success : function(result){
 				console.log("return to commentposts ajax success: "+result.length+" results found.");
-				var html = "<div>"+result.comment.by.username+" : "+result.comment.body+"</div>";
-				$('#'+id+'comments').append(html);			
+				var html = "<div><b>"+result.comment.by.username+"</b>: "+result.comment.body+"</div>";
+				document.getElementById(id+'commentcount').innerHTML = "<span style='display:inline-block; width: 5px;'>"+result.count;
+				$('#'+id+'comments').append(html);		
 			},
 			error : function(result){
 				console.log("return to commentposts ajax failure");
@@ -354,11 +397,12 @@ var commentPost = function(id){
 }
 
 
-/*var postImage = function(){
+/*
+var postImage = function(){
 	console.log("in postImage ajax");
 	var data = new FormData();
-	var img = document.getElementById('inputPhoto').value;
-	data.append('image', img);
+	data.append('postimage', document.getElementById('postImage').value);
+	data.append('posttext', document.getElementById('postText').value);
 	$.ajax({
 		url: "postPhoto",
 		//headers:{
@@ -378,10 +422,10 @@ var commentPost = function(id){
 			alert("error occured while fetching posts");
 		}
 	});
-}*/
+}
 
 
-/*var postStatus = function(){
+var postStatus = function(){
 	console.log("In post ajax");
 	var postcontent = document.getElementById("posText").value;
 	msg = {postcontent:postcontent , likes:0};

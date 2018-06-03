@@ -1,19 +1,20 @@
 <!DOCTYPE html>
 <body onload="javascript:populateCountries('inputCountry');">
-<div id='error_msg' class='text-center'>{{{msg}}}</div>
+<h2 class='text-center'>Welcome to LetsConnect!</h2>
+<div id='error_msg' class=' alert alert-warning'>{{{msg}}}</div>
 <form id='signup_form' class='form-signin text-center' style="margin:auto" method='post' action='/users/signup'>
   <h1 class="h3 mb-3 font-weight-normal">Please Register</h1>
 
   <input type="email" id="inputEmail" name="email" class="form-control" placeholder="Email address"  autocomplete='email' required autofocus>
   <br>
 
-  <input type="text" id="inputName" name="username" class="form-control" placeholder="Name" required autofocus>
+  <input type="text" id="inputName" name="username" class="form-control" placeholder="Name" required>
   <br>
   
-  <input type="text" id="inputFirstName" name="firstname" class="form-control" placeholder="First Name" required autofocus>
+  <input type="text" id="inputFirstName" name="firstname" class="form-control" placeholder="First Name" required>
   <br>
   
-  <input type="text" id="inputLastName" name="lastname" class="form-control" placeholder="Last Name" required autofocus>
+  <input type="text" id="inputLastName" name="lastname" class="form-control" placeholder="Last Name" required>
   <br>
 
   <select id ="inputGender" name="gender" class="dropdown-toggle form-control" id="gender">
@@ -36,7 +37,7 @@
   <!--<button type="button" class="btn btn-md btn-success btn-block" onclick="javascript:signup();">Sign Up</button>-->
   <button type="submit" class="btn btn-md btn-success btn-block"> Sign Up</button>
   
-  <p class='text-center'> Already have an account?
+  <p class='text-center'> Already have an account?<br>
     <a class="btn btn-info" href='./login'>Log In</a>
   </p>
 </form>

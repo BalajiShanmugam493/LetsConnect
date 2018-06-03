@@ -17,15 +17,31 @@ var util = require('util');
 
 router.get('/', function(req, res){
   console.log("redirected to signup");
+  if(req.isAuthenticated()){
+    res.redirect('homepage');
+  }
+  else{
+    res.redirect('signup');
+  }
   //res.sendFile(path.join(__dirname+'/views/signup.html'));
-  res.render('signup', {title: "Sign up", condition: false});
+  
+});
+
+router.get('/template', function(req, res){
+  res.render('template');
 });
 
 
 router.get('/signup',function(req, res){
   console.log("redirected to signup");
+  if(req.isAuthenticated()){
+    res.redirect('homepage');
+  }
+  else{
+    res.render('signup', {title: "Sign up", condition: false});
+  }
   //res.sendFile(path.join(__dirname+'/views/signup.html'));
-  res.render('signup', {title: "Sign up", condition: false});
+  
 });
 
 
@@ -35,7 +51,7 @@ router.post('/signup', function(req, res, next){
   req.checkBody('username', 'Enter a valid Name!').notEmpty().isLength({min: 3});
   req.checkBody('email', 'Invalid email Address!').isEmail();
   req.checkBody('password', 'Incorrect password!').isLength({min: 6});
-  req.checkBody('password', 'Passwords do not match! password!').equals(req.body.confirmPassword);
+  req.checkBody('password', 'Passwords do not match!').equals(req.body.confirmPassword);
   
 
   var errors = req.validationErrors();
@@ -84,7 +100,13 @@ router.post('/signup', function(req, res, next){
 router.get('/login',function(req, res){
   console.log("redirected to login");
   //res.sendFile(path.join(__dirname+"/views/login.html"));
-  res.render('login', { title: "Log in", condition: false});
+  if(req.isAuthenticated()){
+    res.redirect('homepage');
+  }
+  else{
+    res.render('login', { title: "Log in", condition: false});
+  }
+  
 });
 
 
@@ -168,54 +190,79 @@ router.get('/homepage', function(req, res){
 
 
 router.get('/searchpeople', function(req, res){
-  console.log('in searchpeople GET ---- key:'+JSON.stringify(req.data));
-  User.findFriends(req.query, req, res, function(res, result){
-    console.log("in callback :"+result.length+" results found!");
-    var response = {people: result, user: req.user};
-    res.send(response);
-  });
+  console.log('in searchpeople GET ---- key:'+JSON.stringify(req.query));
+  if(req.isAuthenticated()){
+    User.findFriends(req.query, req, res, function(res, result){
+      console.log("in callback :"+result.length+" results found!");
+      var response = {people: result, user: req.user};
+      res.send(response);
+    });
+  }
+  else{
+    res.render('login', { title: "Log in", condition: false});
+  }  
 });
 
 
 router.get('/sendrequest', function(req, res){
   console.log('in sendrequest GET\nto user:'+JSON.stringify(req.query));
-  //console.log('req:'+util.inspect(req));
-  console.log('current user:'+req.session.passport.user);
-  User.sendRequest(req.query, req, res, function(res, result ){
-    console.log("in sendrequest callback :"+JSON.stringify(result));
-    res.send(result);
-  });
+  if(req.isAuthenticated()){
+    console.log('current user:'+req.session.passport.user);
+    User.sendRequest(req.query, req, res, function(res, result ){
+      console.log("in sendrequest callback :"+JSON.stringify(result));
+      res.send(result);
+    });
+  }
+  else{
+    res.render('login', { title: "Log in", condition: false});
+  }
+
+  
 });
 
 router.get('/showrequests', function(req,res){
-  console.log('in showrequests GET\nof user:'+JSON.stringify(req.session.passport.user));
-  User.showRequests(req,res,function(res, resArr){
-    console.log("in showrequests callback :"+resArr.length);
-    res.send(resArr);
-  });
+  if(req.isAuthenticated()){
+    console.log('in showrequests GET\nof user:'+JSON.stringify(req.session.passport.user));
+    User.showRequests(req,res,function(res, resArr){
+      console.log("in showrequests callback :"+resArr.length);
+      res.send(resArr);
+    });
+  }
+  else{
+    res.render('login', { title: "Log in", condition: false});
+  }
 });
 
 
 router.get('/acceptrequest', function(req, res){
   console.log('in acceptrequest GET\nto user:'+JSON.stringify(req.query));
-  //console.log('req:'+util.inspect(req));
-  console.log('current user:'+req.session.passport.user);
-  User.acceptRequest(req.query, req, res, function(res, result ){
-    console.log("in acceptrequest callback :"+JSON.stringify(result));
-    res.send(result);
-  });
+  if(req.isAuthenticated()){
+    console.log('current user:'+req.session.passport.user);
+    User.acceptRequest(req.query, req, res, function(res, result ){
+      console.log("in acceptrequest callback :"+JSON.stringify(result));
+      res.send(result);
+    });
+  }
+  else{
+    res.render('login', { title: "Log in", condition: false});
+  }
 });
 
 router.get('/showfriends', function(req,res){
   console.log('in showfriends GET\nof user:'+JSON.stringify(req.session.passport.user));
-  User.showFriends(req,res,function(res, resArr ){
-    console.log("in showfriends callback :"+resArr.length+" results found.");
-    res.send(resArr);
-  });
+  if(req.isAuthenticated()){
+    User.showFriends(req,res,function(res, resArr ){
+      console.log("in showfriends callback :"+resArr.length+" results found.");
+      res.send(resArr);
+    });
+  }
+  else{
+    res.render('login', { title: "Log in", condition: false});
+  }
 });
 
 
-router.post('/postphoto', function(req, res, next){
+router.post('/homepage', function(req, res, next){
   console.log("in post photo POST");
   var storage = multer.diskStorage({
     destination: function(req, file, callback){
@@ -246,7 +293,7 @@ router.post('/postphoto', function(req, res, next){
       throw err;
       //window.alert('Error occured while uploading!');
       //res.sendFile(path.join(__dirname+"/views/homepage.html"));
-      res.render('homepage', { msg: "Unable to post!", username: req.user.username });
+      res.render('homepage', {msg: "Your post has failed!"});
     }
     else{
       console.log("upload successful"+req.file);
@@ -257,53 +304,7 @@ router.post('/postphoto', function(req, res, next){
       }
       User.postMessage(postData, req, res,function(res, result){
         console.log("in callback: response = "+JSON.stringify(result));
-        res.render('homepage', { msg: "Posted successfully!" });   
-      });
-    }
-  });
-});
-
-
-
-router.post('/changedp', function(req, res, next){
-  console.log("in change profilepic POST");
-
-  var storageDp = multer.diskStorage({
-    destination: function(req, file, callback){
-      callback(null, './public/images');
-    },
-    filename: function(req, file, callback){
-      callback(null, req.user._id+"-dp.jpeg");
-    }
-  });
-
-  var uploadDp = multer({
-    storage: storageDp, 
-    limits: {fileSize: 50000000},
-    fileFilter: function(req, file, cb){
-    const filetypes = /jpeg|jpg|png|gif/;
-    if(filetypes.test(file.mimetype)){
-      return cb(null, true);
-    }
-    else{
-      cb('Error: Images Only!');
-    }
-  }}).single('inputDp');
-
-  uploadDp(req, res, function(err){
-    if(err){
-      throw err;
-      res.render('homepage', { msg: "Unable to change profile pic!" });
-    }
-    else{
-      console.log("upload successful"+req.file);
-      //window.alert('file uploaded');
-      var newImage = {
-        path: req.file.filename,
-      }
-      User.changeProfilePic(newImage, req, res,function(res, result){
-        console.log("in callback: response = "+JSON.stringify(result));
-        res.redirect('homepage');   
+        res.render('homepage', {msg: "You've just posted!", "username": req.username});
       });
     }
   });
@@ -311,45 +312,66 @@ router.post('/changedp', function(req, res, next){
 
 
 router.get('/getposts', function (req, res) {
-   //console.log("inside getposts ");
-   //console.log('req:'+util.inspect(req));
-   console.log("in getposts of user:"+JSON.stringify(req.session.passport.user));
-   User.getPosts(req, res,function(res, result){
-    console.log("in getposts callback :"+result.length+" results found");
-    var response = {"result" : result, "username": req.user.username};
-    res.send(response);
-  });
+   if(req.isAuthenticated()){
+    console.log("in getposts of user:"+JSON.stringify(req.session.passport.user));
+     User.getPosts(req, res,function(res, result){
+      console.log("in getposts callback :"+result.length+" results found");
+      var response = {"result" : result, "user": req.user};
+      console.log(response);
+      res.send(response);
+    });
+  }
+  else{
+    res.render('login', { title: "Log in", condition: false});
+  }  
 });
 
 
 router.get('/likepost', function (req, res) {
-   console.log("in likepost of user:"+JSON.stringify(req.session.passport.user));
-   User.likePost(req.query.id, req, res,function(res, response){
-    console.log("in likepost callback :"+response.likes.length+" results found");
-    res.send(response);
-  });
+  console.log("in likepost of user:"+JSON.stringify(req.session.passport.user));
+  if(req.isAuthenticated()){
+    User.likePost(req.query.id, req, res,function(res, response){
+      console.log("in likepost callback :"+response.likes.length+" results found");
+      res.send(response);
+    });
+  }
+  else{
+    res.render('login', { title: "Log in", condition: false});
+  }   
 });
 
 
 router.post('/commentpost', function (req, res, next) {
-   //console.log('req:'+util.inspect(req));
    console.log("in commentpost of user:"+req.session.passport.user);
-   User.commentPost(req, res,function(res, response){
-    console.log("in commentpost callback");
-    res.send(response);
-  });
+   if(req.isAuthenticated()){
+    User.commentPost(req, res,function(res, response){
+      console.log("in commentpost callback");
+      res.send(response);
+    });
+  }
+  else{
+    res.render('login', { title: "Log in", condition: false});
+  } 
 });
 
+var calculateAge = function(dob){
+  var ageDifMs = Date.now() - dob.getTime();
+    var ageDate = new Date(ageDifMs); // miliseconds from epoch
+    return Math.abs(ageDate.getUTCFullYear() - 1970);
+}
 
 router.get('/myprofile',function(req, res){
   console.log("redirected to user profile");
-  //res.sendFile(path.join(__dirname+'/views/signup.html'));
   if(req.isAuthenticated()){
     //res.sendFile(path.join(__dirname+"/views/homepage.html"));
     res.render('profilepage', {title: req.query.username, 
       id: req.user._id, 
       dp: req.user.profilepic, 
       username: req.user.username,
+      firstname: req.user.firstname,
+      lastname: req.user.lastname,
+      age: calculateAge(req.user.dob),
+      country: req.user.country,
       condition: false
     });
   }
@@ -361,17 +383,77 @@ router.get('/myprofile',function(req, res){
   
 });
 
+router.post('/changedp', function(req, res, next){
+  console.log("in change profilepic POST");
+  if(req.isAuthenticated()){
+    var storageDp = multer.diskStorage({
+      destination: function(req, file, callback){
+        callback(null, './public/images');
+      },
+      filename: function(req, file, callback){
+        callback(null, req.user._id+"-dp.jpeg");
+      }
+    });
+
+    var uploadDp = multer({
+      storage: storageDp, 
+      limits: {fileSize: 50000000},
+      fileFilter: function(req, file, cb){
+      const filetypes = /jpeg|jpg|png|gif/;
+      if(filetypes.test(file.mimetype)){
+        return cb(null, true);
+      }
+      else{
+        cb('Error: Images Only!');
+      }
+    }}).single('inputDp');
+
+    uploadDp(req, res, function(err){
+      if(err){
+        throw err;
+        res.render('homepage', { msg: "Unable to change profile pic!" });
+      }
+      else{
+        console.log("upload successful"+req.file);
+        //window.alert('file uploaded');
+        var newImage = {
+          path: req.file.filename,
+        }
+        User.changeProfilePic(newImage, req, res,function(res, result){
+          console.log("in callback: response = "+JSON.stringify(result));
+          res.render('profilepage', {title: req.query.username, 
+            id: req.user._id, 
+            dp: req.user.profilepic, 
+            username: req.user.username,
+            firstname: req.user.firstname,
+            lastname: req.user.lastname,
+            age: calculateAge(req.user.dob),
+            country: req.user.country,
+            condition: false
+          }); 
+        });
+      }
+    });
+  }
+  else{
+    res.render('login', { title: "Log in", condition: false});
+  }
+});
+
 
 router.get('/friendprofile-:id',function(req, res){
   console.log("redirected to user profile");
   if(req.isAuthenticated()){
     //res.sendFile(path.join(__dirname+"/views/homepage.html"));
-    User.getDp(req.params.id, req, res, function(res, response){
+    User.getFriendProfile(req.params.id, req, res, function(res, response){
       res.render('friendprofile',{
-        title: response.username, 
-        id: req.params.id, 
-        username: response.username, 
-        dp: response.dp, 
+        id: response._id, 
+        dp: response.profilepic, 
+        username: response.username,
+        firstname: response.firstname,
+        lastname: response.lastname,
+        age: calculateAge(response.dob),
+        country: response.country,
         condition: false
       });    
     });
@@ -387,11 +469,16 @@ router.get('/friendprofile-:id',function(req, res){
 router.get('/userposts', function (req, res) {
    //console.log("inside getposts ");
    //console.log('req:'+util.inspect(req));
-   console.log("in profile of user:"+JSON.stringify(req.session.passport.user));
-   User.getPostsByUser(req.query.id, req, res, function(res, response){
-    console.log("in profile callback :"+response.result.length+" results found");
-    res.send(response);
-  });
+   if(req.isAuthenticated()){
+    console.log("in profile of user:"+JSON.stringify(req.session.passport.user));
+    User.getPostsByUser(req.query.id, req, res, function(res, response){
+      console.log("in profile callback :"+response.result.length+" results found");
+      res.send(response);
+    });
+  }
+  else{
+    res.render('login', { title: "Log in", condition: false});
+  }   
 });
 
 

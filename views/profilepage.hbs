@@ -1,18 +1,68 @@
 <!DOCTYPE html>
 <body onload="javascript:userPosts('{{{id}}}');">
-	<button type="button" class="btn btn-primary" onclick="location.href='homepage'">Home</button>
-	<button type="button" class="btn btn-danger" onclick="location.href='logout'">Log Out</button>
-	<div id="profile">
-		<img class="dp" src="/images/{{{dp}}}" alt="Your Image">
-		<span>{{{username}}}</span>
-		<button id='profilepicButton's type='button' class="btn btn-primary" onclick="showElement('changeDp')"> Change</button>
-		<div id='changeDp' style="display:none;">
-			<form id = "addPhoto" method="POST" action="/users/changedp" enctype="multipart/form-data">
-				<input type="file" id="inputDp" name="inputDp" accept="image/*" required>
-				<button type="submit" class="btn btn-primary">Change Photo</button>
-				<button type="button" class="btn btn-danger" onclick="javascript:hideElement('changeDp')"> Cancel</button>
-			</form>
+	<nav class="navbar navbar-inverse">
+	  <div class="container-fluid">
+	    <div class="navbar-header">
+	      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+	        <span class="icon-bar"></span>
+	        <span class="icon-bar"></span>
+	        <span class="icon-bar"></span>                        
+	      </button>
+	      <a class="navbar-brand">LetsConnect</a>
+	    </div>
+	    <div class="collapse navbar-collapse" id="myNavbar">
+	      <ul class="nav navbar-nav navbar-right">
+	       	<li><a href="logout"><span class="glyphicon glyphicon-log-out"></span>Log Out</a></li>
+	      </ul>
+	      <ul class="nav navbar-nav navbar-left">
+	        <li><a href="homepage"><span class="glyphicon glyphicon-home"></span>Home</a></li>
+	      </ul>
+	    </div>
+	  </div>
+	</nav>
+	<div class="container text-center">   
+  		<div class="row">
+  			<div class="col-sm-3 well">
+		      <img src="/images/{{{dp}}}" class="img-rounded" height="200" width="200" alt="Avatar">
+		      <br><br>
+		      <button id='profilepicButton' type='button' class="btn btn-primary" onclick="showElement('changeDp')"> Change Profile Pic</button>
+				<div id='changeDp' style="display:none;">
+					<form id = "addPhoto" method="POST" action="/users/changedp" enctype="multipart/form-data">
+						<label for="inputDp" class="btn btn-md btn-primary" id='postImageDiv'>
+							Choose Profile Pic
+							<input type="file" id='inputDp' class="file" name="inputDp" accept="image/*" required>
+						</label><br>
+						<button type="submit" class="btn btn-success">Change</button>
+						<button type="button" class="btn btn-danger" onclick="javascript:hideElement('changeDp')"> Cancel</button>
+					</form>
+				</div>
+		      <hr>
+		      <b>{{{username}}}</b><br>
+		      {{{firstname}}}<span style='display:inline-block;width: 5px;'></span>{{{lastname}}}<br>
+		      {{{country}}}<br>
+		      Age: {{{age}}}
+		    </div>
+  			{{{msg}}}
+  			<div id='searchresult' onblur="javascript:hideElement('searchresult')">
+			</div>
+			<div class="col-sm-7">
+				<section id='userPosts'></section>
+			</div>		
 		</div>
 	</div>
-	<div id="userPosts"</div>
 </body>
+<!-- <button type="button" class="btn btn-primary" onclick="location.href='homepage'">Home</button>
+<button type="button" class="btn btn-danger" onclick="location.href='logout'">Log Out</button>
+<div id="profile">
+	<img class="dp" src="/images/{{{dp}}}" alt="Your Image">
+	<span>{{{username}}}</span>
+	
+	<div id='changeDp' style="display:none;">
+		<form id = "addPhoto" method="POST" action="/users/changedp" enctype="multipart/form-data">
+			<input type="file" id="inputDp" name="inputDp" accept="image/*" required>
+			<button type="submit" class="btn btn-primary">Change Photo</button>
+			<button type="button" class="btn btn-danger" onclick="javascript:hideElement('changeDp')"> Cancel</button>
+		</form>
+	</div>
+</div>
+ <div id="userPosts"</div> -->

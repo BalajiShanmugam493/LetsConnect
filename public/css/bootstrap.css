@@ -1084,7 +1084,7 @@ html {
 body {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 14px;
-  /*line-height: 1.42857143;*/
+  line-height: 1.42857143;
   color: #333;
   background-color: #fff;
 }
@@ -3231,7 +3231,6 @@ fieldset[disabled] .btn-success.focus {
   color: #fff;
   background-color: #5bc0de;
   border-color: #46b8da;
-  margin: 15px;
 }
 .btn-info:focus,
 .btn-info.focus {
@@ -5027,7 +5026,6 @@ a.thumbnail.active {
 }
 .alert {
   padding: 15px;
-  align-self: center;
   margin-bottom: 20px;
   border: 1px solid transparent;
   border-radius: 4px;
@@ -5452,10 +5450,10 @@ button.list-group-item-danger.active:focus {
 .panel {
   margin-bottom: 20px;
   background-color: #fff;
-  border: 1px solid transparent;
+  border: 2px solid transparent;
   border-radius: 4px;
-  -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
-          box-shadow: 0 1px 1px rgba(0, 0, 0, .05);
+  -webkit-box-shadow: 0 1px 1px rgba(150, 150, 150, .5);
+          box-shadow: 0 1px 1px rgba(150, 150, 150, .5);
 }
 .panel-body {
   padding: 15px;
@@ -5465,6 +5463,7 @@ button.list-group-item-danger.active:focus {
   border-bottom: 1px solid transparent;
   border-top-left-radius: 3px;
   border-top-right-radius: 3px;
+  background-color: #174693;
 }
 .panel-heading > .dropdown .dropdown-toggle {
   color: inherit;
