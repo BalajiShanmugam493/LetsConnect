@@ -289,7 +289,7 @@ router.post('/homepage', function(req, res, next){
       throw err;
       //window.alert('Error occured while uploading!');
       //res.sendFile(path.join(__dirname+"/views/homepage.html"));
-      res.render('homepage', {msg: "Your post has failed!"});
+      res.redirect('homepage');
     }
     else{
       //console.log("upload successful"+req.file);
@@ -300,7 +300,7 @@ router.post('/homepage', function(req, res, next){
       }
       User.postMessage(postData, req, res,function(res, result){
         //console.log("in callback: response = "+JSON.stringify(result));
-        res.render('homepage', {msg: "You've just posted!", "username": req.username});
+        res.redirect('homepage');
       });
     }
   });
