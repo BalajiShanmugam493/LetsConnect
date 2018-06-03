@@ -50,13 +50,13 @@ var Post = module.exports = mongoose.model('Post', PostSchema);
 var User = module.exports = mongoose.model('User', UserSchema);
 
 module.exports.createUser = function(newUser,req, res, callback){
-	console.log("current email:"+newUser.email);
+	//console.log("current email:"+newUser.email);
 	var query = {email: newUser.email};
 	User.find(query,function(err, result){
-		console.log(result);
+		//console.log(result);
 		//response = {status: 0, msg: ''};
 		if(result.length == 0){
-			console.log("account valid");
+			//console.log("account valid");
 			var bcrypt = require('bcryptjs');
 			bcrypt.genSalt(10, function(err, salt) {
 			    bcrypt.hash(newUser.password, salt, function(err, hash) {
@@ -64,18 +64,18 @@ module.exports.createUser = function(newUser,req, res, callback){
 			        newUser.password = hash;
 			        User.create(newUser, function(err, user){
 				      if(err) throw err;
-				      console.log("created user:"+user);
+				      //console.log("created user:"+user);
 				    });
 			        response = { status : 200, msg : "Account created successfully!"};
-			        console.log("response:"+response+" type:"+ typeof response);
+			        //console.log("response:"+response+" type:"+ typeof response);
      				callback(res, response);
 			    });
 			});
 		}
 		else{
-			console.log("account invalid!");
+			//console.log("account invalid!");
 			response = { status : 400, msg : "Account already exists!"};
-			console.log("response:"+response+" type:"+ typeof response);
+			//console.log("response:"+response+" type:"+ typeof response);
      		callback(res, response);
       	}
       	
@@ -87,14 +87,14 @@ module.exports.createUser = function(newUser,req, res, callback){
 
 module.exports.getUserByEmail = function(username, callback){
 	var query = {email: email};
-	console.log("query email:"+query.email);
+	//console.log("query email:"+query.email);
 	User.findOne(query, callback);
 };
 
 
 module.exports.getUserByName = function(username, callback){
 	var query = {"username": username};
-	console.log("query username:"+query.username);
+	//console.log("query username:"+query.username);
 	User.findOne(query, callback);
 };
 
@@ -128,9 +128,9 @@ module.exports.findFriends = function(query, req, res, callback){
 		if(err)throw err;
 		var resultArr = [];
 		for(doc of docs){
-			console.log("userid:"+req.user._id+" current id:"+doc._id);	
+			//console.log("userid:"+req.user._id+" current id:"+doc._id);	
 			if(!doc._id.equals(req.user._id) && isMatch(doc.username, query.key)){//&& doc.friends.indexOf(req.user._id)<0 && doc.friendreq.indexOf(req.session.passport.user)<0
-				//console.log("check:"+doc.friendreq.includes(req.session.passport.user));
+				////console.log("check:"+doc.friendreq.includes(req.session.passport.user));
 				resultArr.push(doc);
 			}	
 		}
@@ -141,9 +141,9 @@ module.exports.findFriends = function(query, req, res, callback){
 
 module.exports.sendRequest = function(query, req, res, callback){
 	User.find(query, function(err, doc){
-		console.log("search result : "+doc);
+		//console.log("search result : "+doc);
 		if(err){
-			console.log("request failed");
+			//console.log("request failed");
 			response = {status: 406, msg: "request failed"};
 			callback(res, response);
 		}
@@ -153,24 +153,24 @@ module.exports.sendRequest = function(query, req, res, callback){
 				newArr = new Array();
 			}
 			newArr.push(req.session.passport.user);
-			console.log("typeof newArr "+ typeof newArr+" "+newArr);
+			//console.log("typeof newArr "+ typeof newArr+" "+newArr);
 			//doc.friendreq.push(req.session.passport.user);
 			doc.friendreq = newArr;
-			console.log("added new request:"+JSON.stringify(doc));
+			//console.log("added new request:"+JSON.stringify(doc));
 			User.findOneAndUpdate(query, {$set:{friendreq:newArr}}, function(err, doc){
-				console.log("updated doc:"+doc);
+				//console.log("updated doc:"+doc);
     			response = {status: 200, msg: "request sent"};
 				callback(res, response);	
 			});
-			//console.log("updated user:"+JSON.stringify());
+			////console.log("updated user:"+JSON.stringify());
 		}
 	});
 }
 
 module.exports.showRequests = function(req,res,callback){
-	//console.log(req);
+	////console.log(req);
 	User.findById(req.session.passport.user, function(err, doc){
-		console.log("friend requests for "+doc.username+": "+doc.friendreq);
+		//console.log("friend requests for "+doc.username+": "+doc.friendreq);
 		if(err)throw err;
 		var reqs=[];
 		reqs=doc.friendreq;
@@ -179,12 +179,12 @@ module.exports.showRequests = function(req,res,callback){
 		}
 		var resultArr = []; 
 		for(r of reqs){
-			console.log("req id:"+r);
+			//console.log("req id:"+r);
 			User.findById(r, function(err,doc1){
-				console.log("friendreq from :"+doc1.username);
+				//console.log("friendreq from :"+doc1.username);
 				resultArr.push(doc1);
 				if(resultArr.length==reqs.length) {
-					console.log("new friend requests : "+resultArr);
+					//console.log("new friend requests : "+resultArr);
 					callback(res, resultArr);
 				}
 			});
@@ -195,9 +195,9 @@ module.exports.showRequests = function(req,res,callback){
 
 module.exports.acceptRequest = function(query, req, res, callback){
 	User.findOne(query, function(err, doc1){
-		//console.log("search result : "+doc1);
+		////console.log("search result : "+doc1);
 		if(err){
-			console.log("accept failed");
+			//console.log("accept failed");
 			response = {status: 406, msg: "accept failed"};
 			callback(res, response);
 		}
@@ -205,17 +205,17 @@ module.exports.acceptRequest = function(query, req, res, callback){
 			var newArr = doc1.friends;
 			if(newArr === undefined) newArr = new Array();
 			newArr.push(req.session.passport.user);
-			//console.log("typeof newArr "+ typeof newArr+" "+newArr);
+			////console.log("typeof newArr "+ typeof newArr+" "+newArr);
 			//doc1.friends.push(req.session.passport.user);
 			doc1.friends = newArr;
-			console.log("added new friend: "+doc1._id);
+			//console.log("added new friend: "+doc1._id);
 			User.findOneAndUpdate(query, {$set:{friends:newArr}}, function(err, doc1){
-				console.log("requestor updated:"+doc1);
+				//console.log("requestor updated:"+doc1);
     			response = {status: 200, msg: "accepted"};		
     			updateAcceptor(doc1._id,req,res,callback);
     			
 			});
-			//console.log("updated user:"+JSON.stringify());
+			////console.log("updated user:"+JSON.stringify());
 		}
 	});
 	updateAcceptor = function(docid,req,res,callback){
@@ -225,9 +225,9 @@ module.exports.acceptRequest = function(query, req, res, callback){
 			var reqArr=doc2.friendreq;
 			var removed=reqArr.splice(reqArr.indexOf(docid),1);
 			doc2.friendreq=reqArr;
-			//console.log("removed "+removed+"from "+doc2.friendreq);
+			////console.log("removed "+removed+"from "+doc2.friendreq);
 			User.update({_id:req.session.passport.user}, {$set:{friends:friendArr, friendreq:reqArr}}, function(err, doc1){
-				console.log("Acceptor updated."+JSON.stringify(doc1));
+				//console.log("Acceptor updated."+JSON.stringify(doc1));
     			response = {status: 200, msg: "accepted"};		
 				callback(res,response);	
 			});	
@@ -236,13 +236,13 @@ module.exports.acceptRequest = function(query, req, res, callback){
 }
 
 module.exports.showFriends = function(req,res,callback){
-	//console.log(req+res);
+	////console.log(req+res);
 	var friends = req.user.friends;
 	if(friends.length==0) callback(res,friends);
 	var resultArr = []; 
-	console.log("friends length:"+friends.length);
+	//console.log("friends length:"+friends.length);
 	for(friend of friends){
-		//console.log(friend);
+		////console.log(friend);
 		User.findOne({_id:friend},function(err,doc){				
 			resultArr.push({username: doc.username, _id: doc._id});
 			if(resultArr.length == friends.length) callback(res,resultArr);
@@ -254,11 +254,11 @@ module.exports.insertPost = function(userdoc, record_id, req, res, callback){
 	var newArr = userdoc.posts;
 	if(newArr === undefined) newArr = new Array();
 	newArr.push(record_id);
-	//console.log("typeof newArr "+ typeof newArr+" "+newArr);
+	////console.log("typeof newArr "+ typeof newArr+" "+newArr);
 	userdoc.posts = newArr;
-	console.log("added new post:"+JSON.stringify(userdoc));
+	//console.log("added new post:"+JSON.stringify(userdoc));
 	User.findOneAndUpdate({_id:userdoc._id},{$set:{posts:newArr}}, function(err, doc1){
-		console.log("user updated.");
+		//console.log("user updated.");
 		response = {status: 200, msg: "posted"};		
 		callback(res,response);    			
 	});
@@ -267,13 +267,13 @@ module.exports.insertPost = function(userdoc, record_id, req, res, callback){
 
 
 module.exports.postMessage = function(postdata, req, res, callback){
-	console.log("in post message function:"+JSON.stringify(postdata));
-	console.log(postdata);
+	//console.log("in post message function:"+JSON.stringify(postdata));
+	//console.log(postdata);
 	var postmsg={postcontent: postdata, postedby_id:req.user._id, postedby_name:req.user.username, likes:[], comments: []};
 	Post.create(postmsg, function(err, record){
-		console.log("post added as:");
-		console.log(typeof  record);
-		console.log(record);
+		//console.log("post added as:");
+		//console.log(typeof  record);
+		//console.log(record);
 		User.insertPost(req.user, record._id, req, res, callback);
 	});
 
@@ -282,13 +282,13 @@ module.exports.postMessage = function(postdata, req, res, callback){
 
 
 module.exports.changeProfilePic = function(image,req,res,callback){
-	console.log("in post message function---");
+	//console.log("in post message function---");
 	User.findByIdAndUpdate(req.user._id,  {$set:{profilepic: image.path}}, function(err, doc){
 		if(err){
-			console.log("upload dp error");
+			//console.log("upload dp error");
 			throw err;
 		}
-		console.log("user updated.");
+		//console.log("user updated.");
 		response = {status: 200, msg: "profile pic changed"};		
 		callback(res,response);  
 	});
@@ -296,7 +296,7 @@ module.exports.changeProfilePic = function(image,req,res,callback){
 
 
 module.exports.getPosts = function(req,res,callback){
-	console.log("In getPosts model");
+	//console.log("In getPosts model");
 	var friends = req.user.friends;
 	var count=0;
 	var resultArr = new Array();
@@ -305,27 +305,27 @@ module.exports.getPosts = function(req,res,callback){
 	}
 	Post.find({postedby_id:req.user._id},function(err,docs){
 		if(err){
-			console.log("getposts failed");
+			//console.log("getposts failed");
 			response = {status: 406, msg: "cannot fetch posts"};
 			callback(res, response);
 		}
 		else {
 			for(doc of docs) resultArr.push(doc);
-			console.log("fetched posts:"+resultArr);
+			//console.log("fetched posts:"+resultArr);
 		}
 	});
 	for(friend of friends){
 		Post.find({postedby_id:friend},function(err,docs){
 			count++;
-			console.log("friend " + count);
+			//console.log("friend " + count);
 			if(err){
-				console.log("getposts failed");
+				//console.log("getposts failed");
 				response = {status: 406, msg: "cannot fetch posts"};
 				callback(res, response);
 			}
 			else {
 				for(doc of docs) resultArr.push(doc);
-				console.log("fetched posts:"+resultArr);
+				//console.log("fetched posts:"+resultArr);
 				if(count==friends.length) callback(res,resultArr);
 			}
 		});
@@ -335,20 +335,20 @@ module.exports.getPosts = function(req,res,callback){
 
 
 module.exports.likePost = function(postid, req, res, callback){
-	//console.log(""+"./");
+	////console.log(""+"./");
 	Post.findById(postid, function(err,doc){
 		if(err){
-			console.log("addlikes failed 1: "+err);
+			//console.log("addlikes failed 1: "+err);
 			response = {status: 406, msg: "cannot fetch your posts"};
 			callback(res, response);
 		}
 		var oldLikes = doc.likes;
-		console.log("old likes:"+oldLikes);
+		//console.log("old likes:"+oldLikes);
 		var newLiker = {userid: req.user._id, username: req.user.username};
 		var isNew = true;
 		if(oldLikes.length != 0){
 			for(like of oldLikes){
-				console.log("like = "+like.username+" newliker = "+newLiker);
+				//console.log("like = "+like.username+" newliker = "+newLiker);
 				if(like.userid.equals(newLiker.userid)){
 					isNew = false;
 					break;
@@ -356,21 +356,21 @@ module.exports.likePost = function(postid, req, res, callback){
 			}
 		}
 		if(isNew){
-			console.log("new like added");
+			//console.log("new like added");
 			oldLikes.push(newLiker);
 			Post.findByIdAndUpdate(postid, {$set: {"likes": oldLikes}}, function(err,doc){
 				if(err){
-					console.log("addlikes failed 2 : "+err);
+					//console.log("addlikes failed 2 : "+err);
 					response = {status: 406, msg: "cannot fetch your posts"};
 					callback(res, response);
 				}
-				console.log("after updating likes:"+doc);
+				//console.log("after updating likes:"+doc);
 				var response = {"status": 200, "msg": "post liked", "likes": oldLikes};
 				callback(res, response);
 			});
 		}
 		else {
-			console.log("Already liked!");
+			//console.log("Already liked!");
 			var response = {"status": 200, "msg": "post liked", "likes": oldLikes};
 			callback(res, response);
 		}
@@ -380,7 +380,7 @@ module.exports.likePost = function(postid, req, res, callback){
 
 
 module.exports.commentPost = function(req, res, callback){
-	//console.log(""+"./");
+	////console.log(""+"./");
 	var newComment = {
 		by: {userid: req.user.id, username: req.user.username},
 		body: req.body.comment,
@@ -388,22 +388,22 @@ module.exports.commentPost = function(req, res, callback){
 	};
 	Post.findById(req.body.id, function(err,doc){
 		if(err){
-			console.log("addcomment failed 1: "+err);
+			//console.log("addcomment failed 1: "+err);
 			response = {status: 406, msg: "cannot comment this post"};
 			callback(res, response);
 		}
 		var oldComments = doc.comments;
-		console.log("old comments:");
-		console.log(oldComments);
+		//console.log("old comments:");
+		//console.log(oldComments);
 		var isNew = true;
 		oldComments.push(newComment);
 		Post.findByIdAndUpdate(req.body.id, {$set: {"comments": oldComments}}, function(err,doc){
 			if(err){
-				console.log("add comments failed 2 : "+err);
+				//console.log("add comments failed 2 : "+err);
 				response = {status: 406, msg: "cannot comment this post"};
 				callback(res, response);
 			}
-			console.log("after updating likes:"+doc);
+			//console.log("after updating likes:"+doc);
 			var response = {"status": 200, "msg": "post commented", "comment": newComment, "count": oldComments.length};
 			callback(res, response);
 		});
@@ -413,14 +413,14 @@ module.exports.commentPost = function(req, res, callback){
 
 
 module.exports.getPostsByUser = function(user, req, res, callback){
-	//console.log(""+"./");
+	////console.log(""+"./");
 	Post.find({postedby_id: user}, function(err,doc){
 		if(err){
-			console.log("getposts failed"+err);
+			//console.log("getposts failed"+err);
 			response = {status: 406, msg: "cannot fetch your posts"};
 			callback(res, response);
 		}
-		console.log("my posts:"+doc);
+		//console.log("my posts:"+doc);
 		var response = {status: 200, msg: "fetch user's post successful!", result: doc, user: req.user};
 		callback(res, response);
 	});
