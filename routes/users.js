@@ -27,10 +27,6 @@ router.get('/', function(req, res){
   
 });
 
-router.get('/template', function(req, res){
-  res.render('template');
-});
-
 
 router.get('/signup',function(req, res){
   //console.log("redirected to signup");
@@ -199,7 +195,7 @@ router.get('/searchpeople', function(req, res){
     });
   }
   else{
-    res.render('login', { title: "Log in", condition: false});
+    res.redirect('login');
   }  
 });
 
@@ -214,7 +210,7 @@ router.get('/sendrequest', function(req, res){
     });
   }
   else{
-    res.render('login', { title: "Log in", condition: false});
+    res.redirect('login');
   }
 
   
@@ -229,7 +225,7 @@ router.get('/showrequests', function(req,res){
     });
   }
   else{
-    res.render('login', { title: "Log in", condition: false});
+    res.redirect('login');
   }
 });
 
@@ -244,7 +240,7 @@ router.get('/acceptrequest', function(req, res){
     });
   }
   else{
-    res.render('login', { title: "Log in", condition: false});
+    res.redirect('login');
   }
 });
 
@@ -257,7 +253,7 @@ router.get('/showfriends', function(req,res){
     });
   }
   else{
-    res.render('login', { title: "Log in", condition: false});
+    res.redirect('login');
   }
 });
 
@@ -322,7 +318,7 @@ router.get('/getposts', function (req, res) {
     });
   }
   else{
-    res.render('login', { title: "Log in", condition: false});
+    res.redirect('login');
   }  
 });
 
@@ -336,7 +332,7 @@ router.get('/likepost', function (req, res) {
     });
   }
   else{
-    res.render('login', { title: "Log in", condition: false});
+    res.redirect('login');
   }   
 });
 
@@ -350,7 +346,7 @@ router.post('/commentpost', function (req, res, next) {
     });
   }
   else{
-    res.render('login', { title: "Log in", condition: false});
+    res.redirect('login');
   } 
 });
 
@@ -411,7 +407,7 @@ router.post('/changedp', function(req, res, next){
     uploadDp(req, res, function(err){
       if(err){
         throw err;
-        res.render('homepage', { msg: "Unable to change profile pic!" });
+        res.redirect('myprofile');
       }
       else{
         //console.log("upload successful"+req.file);
@@ -421,22 +417,13 @@ router.post('/changedp', function(req, res, next){
         }
         User.changeProfilePic(newImage, req, res,function(res, result){
           //console.log("in callback: response = "+JSON.stringify(result));
-          res.render('profilepage', {title: req.query.username, 
-            id: req.user._id, 
-            dp: req.user.profilepic, 
-            username: req.user.username,
-            firstname: req.user.firstname,
-            lastname: req.user.lastname,
-            age: calculateAge(req.user.dob),
-            country: req.user.country,
-            condition: false
-          }); 
+          res.redirect('myprofile'); 
         });
       }
     });
   }
   else{
-    res.render('login', { title: "Log in", condition: false});
+    res.redirect('login');
   }
 });
 
@@ -477,7 +464,7 @@ router.get('/userposts', function (req, res) {
     });
   }
   else{
-    res.render('login', { title: "Log in", condition: false});
+    res.redirect('login');
   }   
 });
 
